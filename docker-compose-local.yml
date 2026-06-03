@@ -1,0 +1,28 @@
+services:
+  mayhem:
+    build: .
+    image: mayhem
+    container_name: mayhem
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      # Required: a long random string used to encrypt the session cookie.
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      # Optional overrides.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PLEX_CLIENT_IDENTIFIER: ${PLEX_CLIENT_IDENTIFIER:-}
+      # App title shown in the sidebar, login screen, and browser tab (default: Mayhem).
+      APP_TITLE: ${APP_TITLE:-Mayhem}
+      # UI scale: small | medium | large | extra-large | full (default: medium).
+      # extra-large maximizes the now-playing album art. full uses album art as the
+      # now-playing background and disables the visualizer.
+      UI_SCALE: ${UI_SCALE:-medium}
+      # Show the frequency visualizer on the now-playing screen (default: true).
+      VISUALIZER_ENABLED: ${VISUALIZER_ENABLED:-true}
+    volumes:
+      - mayhem-data:/data
+    restart: unless-stopped
+
+volumes:
+  mayhem-data:
+  

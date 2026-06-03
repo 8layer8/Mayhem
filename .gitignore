@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+client/dist/
+server/dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local data (persisted Plex client identifier, etc.)
+data/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

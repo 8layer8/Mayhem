@@ -10,15 +10,17 @@ there are no CORS headaches), and serves a React single-page app.
 
 ## Why?
 
-Because Plex's desktop music player is the best and there's no way to have it in a Tesla besides Bluetooth and running it on your phone. Yes it works, it's no fun. Note: No, Teslas do not currently have CarPlay or Android Auto. This is a project for the Tesla/Plex/Self-Hosters/Plex music fans.
+Because Plexamp is the best and there's no way to have it in a Tesla besides Bluetooth and running it on your phone. Yes it works, but it's no fun. Note: No, Teslas do not currently have CarPlay or Android Auto. This is a project for the Tesla/Plex/Self-Hosters/Plex music fans who are all too aware of this.
 
-It does not have all of the desktop player's features, far from it. However, it does give you a nice web-based interface for all your Plex based music. It can run fullscreen or off to the side, it works while the car is driving, while navigation is active, while backing up, while sitting still, etc. It has a Visualizer spectrum analyzer (you can turn it off). The UI is nice and snappy and easy to use while driving (please pay attention to the road!) with big buttons and visual feedback.
+It does not have all of Plexamp's features, far from it. However, it does give you a nice web-based interface for all your Plex based music. It can run fullscreen or the standard 2/3rds while driving. It works while the car is driving, while navigation is active, while backing up, while sitting still, etc. It has a Visualizer spectrum analyzer (you can turn it off). The UI is nice and snappy and easy to use while driving (please pay attention to the road!) with big buttons and visual feedback.
+
+It tries to not transcode anything, it plays everything I've thrown at it from 24khz mono Audiobooks to 4mbit FLAC. Cell coverage will come into play for the higher bitrate FLACs, that's just the way it is, we're streaming everything here.
 
 ## Quick start (Docker)
 
 Clone this repo to your docker server.
 
-There are example docker-compose.yml files, pick what you need to suit your environment. There is a traefik/docker swarm compatible file and a regular docker version that exposes a port. 
+There are example docker-compose.yml files, pick what you need to suit your environment. There is a traefik/docker swarm compatible file and a regular docker version that exposes a port.
 
 There are example .env files, again, pick one that suits your needs. (I like the fullscreen version)
 
@@ -29,16 +31,20 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Then open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv, pick your
+To test, open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv, pick your
 server, and start playing.
 
-Note that the login will open a new tab even on the Tesla browser. Sign into YOUR Plex server. It may leave the sign in tab open and say that it failed, just close it and go back to the player tab. If you have multiple Plex servers, you will be able to choose one here. It will log you in as the owner account, but you can choose Switch User and change to your regular user with the PIN.
+You will need this available to the public internet for this to work. You can't do a VPN from the Tesla, so it has to be public, and your Plex server has to be public. If you have gone to the effort of setting up a Pi with VPN in your car, you don't need this, you should just run plexamp on the Pi and control it headlessly. That was a bridge too far for me.
+
+Once it is available on the internet, you need to go to the site from the browser in your Tesla. You can do this over http or https, by domain name or by IP address directly. That is all on you. If you made it this far, I'm sure you can handle it. I'm considering hosting this somewhere public for anyone to use (abuse) but need to see what the bandwidth/security aspects are if I do that. I would prefer to not do that at all, but if the demand is there, maybe.
+
+Note that the Plex login will open a new tab even on the Tesla browser. Sign into YOUR Plex server. It may leave the sign-in tab open and say that it failed, just close it and go back to the player tab. If you have multiple Plex servers, you will be able to choose one here. It will log you in as the owner account, but you can choose Switch User and change to your regular user with the PIN.
 
 You will see all your shared audio libraries, playlists, artists and a search option.
 
 Once you are playing something, you can touch the bottom left image and pop the player fullscreen.
 
-The steering wheel controls do not work to control the player (sorry) so you have to run the radio like it's 1985. But you can minimize the browser (and the media player on the left) and it stays running. It allows navigation prompts to cut through, and will come back to the playing page if you touch the browser button again.
+The steering wheel controls do not work to control the player (sorry) so you have to run the radio like it's 1985. But you can minimize the browser (and the media player on the left) and it stays running. It allows navigation prompts to cut through, and will come back to the playing page if you touch the browser button again. Sometimes the browser remembers the site when you get back in the car, sometimes not, so favorite the site by pressing the Star. I have not had it re-prompt for login in normal use, but that's always a possibility. Check before you start driving.
 
 ## Local development
 

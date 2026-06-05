@@ -6,6 +6,7 @@ import {
   removePlaylistItem,
 } from "../api/playlists";
 import { getPlaylistTracks } from "../api/plex";
+import { GlyphClose, GlyphGrip, GlyphPlay } from "../components/Glyphs";
 import { usePlayer } from "../store/player";
 import { formatDuration } from "../util/format";
 
@@ -53,7 +54,7 @@ export function PlaylistPage() {
     <div className="page">
       <div className="button-row">
         <button className="btn-primary" disabled={!tracks?.length} onClick={() => tracks && playTracks(tracks, 0)}>
-          ▶ Play
+          <GlyphPlay /> Play
         </button>
       </div>
 
@@ -68,12 +69,10 @@ export function PlaylistPage() {
             onDrop={() => onDrop(i)}
             onDoubleClick={() => playTracks(tracks, i)}
           >
-            <span className="drag-handle" aria-hidden>
-              ⠿
-            </span>
-            <button className="track-index" onClick={() => playTracks(tracks, i)} title="Play">
+            <GlyphGrip className="drag-handle" />
+            <button className="track-play" onClick={() => playTracks(tracks, i)} title="Play">
               <span className="num">{i + 1}</span>
-              <span className="play-glyph">▶</span>
+              <GlyphPlay className="play-glyph" />
             </button>
             <div className="track-main">
               <div className="track-title">{track.title}</div>
@@ -89,7 +88,7 @@ export function PlaylistPage() {
               disabled={track.playlistItemID == null}
               onClick={() => track.playlistItemID != null && remove.mutate(track.playlistItemID)}
             >
-              ✕
+              <GlyphClose />
             </button>
           </li>
         ))}

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { GlyphClose, GlyphGrip } from "./Glyphs";
 import { usePlayer } from "../store/player";
 import { formatDuration } from "../util/format";
 
@@ -22,7 +23,7 @@ export function QueuePanel({ onClose }: { onClose: () => void }) {
             Clear
           </button>
           <button className="icon" onClick={onClose} title="Close">
-            ✕
+            <GlyphClose />
           </button>
         </div>
       </div>
@@ -40,16 +41,14 @@ export function QueuePanel({ onClose }: { onClose: () => void }) {
             }}
             onDoubleClick={() => playAt(i)}
           >
-            <span className="drag-handle" aria-hidden>
-              ⠿
-            </span>
+            <GlyphGrip className="drag-handle" />
             <div className="queue-text" onClick={() => playAt(i)}>
               <div className="queue-title">{track.title}</div>
               <div className="queue-sub muted">{track.artist}</div>
             </div>
             <span className="muted small">{formatDuration(track.duration)}</span>
             <button className="icon" title="Remove" onClick={() => removeAt(i)}>
-              ✕
+              <GlyphClose />
             </button>
           </li>
         ))}

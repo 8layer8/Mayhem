@@ -129,6 +129,10 @@ a {
   font-weight: 700;
   font-size: 1.05rem;
   min-height: var(--touch);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
 }
 .btn-primary {
   background: var(--accent);
@@ -514,27 +518,49 @@ input[type="range"]::-moz-range-thumb {
 .track-row.active .track-title {
   color: var(--accent);
 }
-.track-play {
+.track-play,
+.track-index {
   background: none;
   border: none;
   min-width: var(--touch);
   min-height: var(--touch);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--muted);
   font-size: 1.1rem;
   border-radius: 8px;
 }
-.track-play .play-glyph {
+.track-play .play-glyph,
+.track-index .play-glyph {
   display: none;
 }
-.track-row:hover .track-play .num,
-.track-play:focus-visible .num {
-  display: none;
+@media (hover: hover) and (pointer: fine) {
+  .track-row:hover .track-play .num,
+  .track-row:hover .track-index .num,
+  .track-play:focus-visible .num,
+  .track-index:focus-visible .num {
+    display: none;
+  }
+  .track-row:hover .track-play .play-glyph,
+  .track-row:hover .track-index .play-glyph,
+  .track-play:focus-visible .play-glyph,
+  .track-index:focus-visible .play-glyph {
+    display: inline-flex;
+    color: var(--text);
+  }
 }
-.track-row:hover .track-play .play-glyph,
-.track-play:focus-visible .play-glyph {
-  display: inline;
-  color: var(--text);
+@media (hover: none), (pointer: coarse) {
+  .track-play .num,
+  .track-index .num {
+    display: none;
+  }
+  .track-play .play-glyph,
+  .track-index .play-glyph {
+    display: inline-flex;
+    color: var(--text);
+  }
 }
 .track-main {
   flex: 1;
@@ -558,6 +584,9 @@ input[type="range"]::-moz-range-thumb {
   min-height: var(--touch);
   border-radius: 50%;
   font-size: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .track-duration {
   font-variant-numeric: tabular-nums;
@@ -568,6 +597,74 @@ input[type="range"]::-moz-range-thumb {
   cursor: grab;
   font-size: 1.4rem;
   padding: 0 0.25rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Pure-CSS glyphs (Tesla / TV browsers often omit emoji & exotic unicode). */
+.glyph {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.glyph-play {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.38em 0 0.38em 0.62em;
+  border-color: transparent transparent transparent currentColor;
+}
+.glyph-close {
+  position: relative;
+  width: 1em;
+  height: 1em;
+}
+.glyph-close::before,
+.glyph-close::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.72em;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.glyph-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.glyph-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.glyph-grip {
+  width: 0.85em;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 0.34em currentColor, 0 0.68em currentColor;
+}
+.glyph-plus {
+  position: relative;
+  width: 1em;
+  height: 1em;
+}
+.glyph-plus::before,
+.glyph-plus::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+.glyph-plus::before {
+  width: 0.72em;
+  height: 2px;
+}
+.glyph-plus::after {
+  width: 2px;
+  height: 0.72em;
 }
 
 /* --- Search --- */
@@ -636,6 +733,9 @@ input[type="range"]::-moz-range-thumb {
   min-width: var(--touch);
   min-height: var(--touch);
   border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .icon:hover {
   background: var(--bg-elev-2);
@@ -841,12 +941,16 @@ input[type="range"]::-moz-range-thumb {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  transform: scale(0.94);
+  transform-origin: center center;
   z-index: 0;
 }
-.now-playing-screen.full .np-full-bg::after {
+.now-playing-screen.full::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background: linear-gradient(
     to bottom,
     rgba(11, 11, 15, 0.65) 0%,

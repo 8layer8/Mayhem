@@ -1,4 +1,5 @@
 import type { Track } from "../api/plex";
+import { GlyphPlus, GlyphPlay } from "./Glyphs";
 import { usePlayer } from "../store/player";
 import { formatDuration } from "../util/format";
 
@@ -22,7 +23,7 @@ export function TrackList({ tracks, showTrackNumber = true }: TrackListProps) {
           <li key={track.ratingKey} className={`track-row ${active ? "active" : ""}`}>
             <button className="track-play" title="Play" onClick={() => playTracks(tracks, i)}>
               <span className="num">{showTrackNumber ? (track.trackNumber ?? i + 1) : i + 1}</span>
-              <span className="play-glyph">▶</span>
+              <GlyphPlay className="play-glyph" />
             </button>
             <div
               className="track-main"
@@ -41,7 +42,7 @@ export function TrackList({ tracks, showTrackNumber = true }: TrackListProps) {
             </div>
             <span className="track-duration muted">{formatDuration(track.duration)}</span>
             <button className="track-add" title="Add to queue" onClick={() => addToQueue([track])}>
-              ＋
+              <GlyphPlus />
             </button>
           </li>
         );

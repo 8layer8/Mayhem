@@ -1067,20 +1067,26 @@ input[type="range"]::-moz-range-thumb {
   inset: 0;
   overflow: hidden;
   z-index: 0;
-  background-image: var(--np-full-bg);
-  background-size: 88%;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 .now-playing-screen.full .np-full-bg::before {
   content: "";
   position: absolute;
-  inset: -12%;
+  inset: -10%;
   background-image: var(--np-full-bg);
   background-size: cover;
   background-position: center;
   filter: blur(48px) saturate(1.15);
-  z-index: -1;
+  z-index: 0;
+}
+.now-playing-screen.full .np-full-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--np-full-bg);
+  background-size: 88%;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
 }
 .now-playing-screen.full::after {
   content: "";

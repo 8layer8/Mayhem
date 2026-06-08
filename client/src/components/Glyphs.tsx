@@ -19,3 +19,23 @@ export function GlyphGrip({ className }: { className?: string }) {
 export function GlyphPlus({ className }: { className?: string }) {
   return <span className={glyphClass("glyph-plus", className)} aria-hidden />;
 }
+
+export function GlyphQueue({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-queue", className)} aria-hidden />;
+}
+
+export function GlyphBackspace({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-backspace", className)} aria-hidden />;
+}
+
+export function GlyphCheck({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-check", className)} aria-hidden />;
+}
+
+export function GlyphBack({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-back", className)} aria-hidden />;
+}
+
+export function GlyphLock({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-lock", className)} aria-hidden />;
+}

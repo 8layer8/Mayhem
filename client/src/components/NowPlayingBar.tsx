@@ -1,5 +1,8 @@
 import { usePlayer } from "../store/player";
+import { AddToPlaylist } from "./AddToPlaylist";
 import { Artwork } from "./Artwork";
+import { GlyphQueue } from "./Glyphs";
+import { RemoveFromPlaylistButton } from "./RemoveFromPlaylistButton";
 import { SeekBar } from "./SeekBar";
 
 interface NowPlayingBarProps {
@@ -29,6 +32,12 @@ export function NowPlayingBar({ onToggleQueue, onToggleNowPlaying }: NowPlayingB
           <div className="np-title">{current?.title ?? "Nothing playing"}</div>
           <div className="np-artist muted">{current?.artist ?? ""}</div>
         </div>
+        {current && (
+          <div className="np-track-actions" onClick={(e) => e.stopPropagation()}>
+            <AddToPlaylist tracks={[current]} variant="compact" />
+            <RemoveFromPlaylistButton />
+          </div>
+        )}
       </div>
 
       <div className="np-controls">
@@ -74,7 +83,7 @@ export function NowPlayingBar({ onToggleQueue, onToggleNowPlaying }: NowPlayingB
           onChange={(e) => setVolume(Number(e.target.value))}
         />
         <button className="icon" title="Queue" onClick={onToggleQueue}>
-          ☰
+          <GlyphQueue />
         </button>
       </div>
     </footer>

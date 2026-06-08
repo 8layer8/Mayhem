@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { CSSProperties } from "react";
 import { artUrl } from "../api/client";
 import { HERO_ART_PIXELS } from "../api/config";
 import { getTrackMediaInfo } from "../api/stream";
@@ -6,6 +7,8 @@ import { useHeroArtPixels, useUiConfig } from "../context/UiConfig";
 import { usePlayer } from "../store/player";
 import { formatTrackMedia } from "../util/formatMedia";
 import { Artwork } from "./Artwork";
+import { AddToPlaylist } from "./AddToPlaylist";
+import { RemoveFromPlaylistButton } from "./RemoveFromPlaylistButton";
 import { SeekBar } from "./SeekBar";
 import { Visualizer } from "./Visualizer";
 
@@ -47,7 +50,7 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
       {isFull && fullBgUrl && (
         <div
           className="np-full-bg"
-          style={{ backgroundImage: `url(${fullBgUrl})` }}
+          style={{ "--np-full-bg": `url(${fullBgUrl})` } as CSSProperties}
           aria-hidden
         />
       )}
@@ -61,9 +64,17 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
         )}
         <h1>{current?.title ?? "Nothing playing"}</h1>
         {mediaLabel && <p className="np-format">{mediaLabel}</p>}
-        <p className="muted">
-          {current?.artist}
-          {current?.album ? ` — ${current.album}` : ""}
+        {current && (
+          <div className="np-track-actions np-track-actions-center">
+            <AddToPlaylist tracks={[current]} variant="compact" />
+            <RemoveFromPlaylistButton />
+          </div>
+        )}
+        <p className="muted np-artist-line">
+          <span>
+            {current?.artist}
+            {current?.album ? ` — ${current.album}` : ""}
+          </span>
         </p>
         <SeekBar />
         <div className="transport big">

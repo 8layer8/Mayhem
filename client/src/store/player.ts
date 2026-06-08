@@ -12,6 +12,8 @@ interface PlayerState {
   volume: number; // 0..1
   repeat: RepeatMode;
   shuffle: boolean;
+  /** Set when playback started from a playlist; enables remove-from-playlist in the player. */
+  sourcePlaylistId: string | null;
   /** Pending seek target (seconds) for the audio engine to consume, or null. */
   seekTo: number | null;
 
@@ -19,7 +21,7 @@ interface PlayerState {
   nextTrack: () => Track | undefined;
 
   // intent flags consumed by the audio engine component
-  playTracks: (tracks: Track[], startIndex?: number) => void;
+  playTracks: (tracks: Track[], startIndex?: number, sourcePlaylistId?: string | null) => void;
   addToQueue: (tracks: Track[]) => void;
   playAt: (index: number) => void;
   removeAt: (index: number) => void;
@@ -52,6 +54,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   volume: 1,
   repeat: "off",
   shuffle: false,
+  sourcePlaylistId: null,
   seekTo: null,
 
   current: () => {
@@ -66,9 +69,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     return undefined;
   },
 
-  playTracks: (tracks, startIndex = 0) => {
+  playTracks: (tracks, startIndex = 0, sourcePlaylistId = null) => {
     if (!tracks.length) return;
-    set({ queue: tracks, index: startIndex, isPlaying: true, position: 0 });
+    set({
+      queue: tracks,
+      index: startIndex,
+      isPlaying: true,
+      position: 0,
+      sourcePlaylistId: sourcePlaylistId ?? null,
+    });
   },
   addToQueue: (tracks) =>
     set((s) => {
@@ -104,7 +113,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       else if (from > s.index && to <= s.index) index += 1;
       return { queue, index };
     }),
-  clearQueue: () => set({ queue: [], index: -1, isPlaying: false, position: 0 }),
+  clearQueue: () =>
+    set({ queue: [], index: -1, isPlaying: false, position: 0, sourcePlaylistId: null }),
 
   togglePlay: () => set((s) => (s.index >= 0 ? { isPlaying: !s.isPlaying } : {})),
   setPlaying: (playing) => set({ isPlaying: playing }),

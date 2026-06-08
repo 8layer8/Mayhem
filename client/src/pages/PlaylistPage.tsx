@@ -53,7 +53,7 @@ export function PlaylistPage() {
   return (
     <div className="page">
       <div className="button-row">
-        <button className="btn-primary" disabled={!tracks?.length} onClick={() => tracks && playTracks(tracks, 0)}>
+        <button className="btn-primary" disabled={!tracks?.length} onClick={() => tracks && playTracks(tracks, 0, ratingKey)}>
           <GlyphPlay /> Play
         </button>
       </div>
@@ -67,10 +67,10 @@ export function PlaylistPage() {
             onDragStart={() => (dragFrom.current = i)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => onDrop(i)}
-            onDoubleClick={() => playTracks(tracks, i)}
+            onDoubleClick={() => playTracks(tracks, i, ratingKey)}
           >
             <GlyphGrip className="drag-handle" />
-            <button className="track-play" onClick={() => playTracks(tracks, i)} title="Play">
+            <button className="track-play" onClick={() => playTracks(tracks, i, ratingKey)} title="Play">
               <span className="num">{i + 1}</span>
               <GlyphPlay className="play-glyph" />
             </button>

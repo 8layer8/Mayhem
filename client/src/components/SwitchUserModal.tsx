@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { listUsers, switchUser, type HomeUser } from "../api/users";
+import { GlyphBack, GlyphBackspace, GlyphCheck, GlyphClose, GlyphLock } from "./Glyphs";
 import { usePlayer } from "../store/player";
 
 /** Large, touch-friendly modal for switching between Plex Home users. */
@@ -39,7 +40,7 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close icon" onClick={onClose} title="Close">
-          ✕
+          <GlyphClose />
         </button>
 
         {!pinFor ? (
@@ -58,7 +59,7 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
                     {user.thumb ? <img src={user.thumb} alt="" /> : <span>{user.title[0]}</span>}
                   </span>
                   <span className="user-name">{user.title}</span>
-                  {user.protected && <span className="user-lock">🔒</span>}
+                  {user.protected && <GlyphLock className="user-lock" />}
                   {user.uuid === data.currentUuid && <span className="user-badge">Current</span>}
                 </button>
               ))}
@@ -88,8 +89,8 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
                   {n}
                 </button>
               ))}
-              <button className="key" onClick={() => setPin((p) => p.slice(0, -1))}>
-                ⌫
+              <button className="key" onClick={() => setPin((p) => p.slice(0, -1))} title="Delete">
+                <GlyphBackspace />
               </button>
               <button className="key" onClick={() => setPin((p) => (p.length < 8 ? p + "0" : p))}>
                 0
@@ -99,12 +100,12 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
                 onClick={submitPin}
                 disabled={pin.length < 4 || doSwitch.isPending}
               >
-                ✓
+                <GlyphCheck />
               </button>
             </div>
             {doSwitch.isError && <p className="error">Wrong PIN. Try again.</p>}
             <button className="link big-link" onClick={() => setPinFor(null)}>
-              ← Back
+              <GlyphBack /> Back
             </button>
           </div>
         )}

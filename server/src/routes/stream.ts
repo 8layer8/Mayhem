@@ -21,6 +21,17 @@ const DIRECT_PLAY_CODECS = new Set([
   "wav",
 ]);
 
+const CODEC_MIME: Record<string, string> = {
+  mp3: "audio/mpeg",
+  aac: "audio/aac",
+  flac: "audio/flac",
+  alac: "audio/mp4",
+  vorbis: "audio/ogg",
+  opus: "audio/ogg",
+  pcm: "audio/wav",
+  wav: "audio/wav",
+};
+
 interface TrackPart {
   partKey: string;
   codec: string;
@@ -95,7 +106,7 @@ streamRouter.get("/:ratingKey", async (req, res) => {
   const directPlayable = DIRECT_PLAY_CODECS.has(part.codec);
 
   if (directPlayable && !forceTranscode) {
-    return directProxy(req, res, server.baseUrl, server.accessToken, part.partKey);
+    return directProxy(req, res, server.baseUrl, server.accessToken, part);
   }
   return transcodeProxy(req, res, server.baseUrl, server.accessToken, ratingKey);
 });
@@ -106,9 +117,9 @@ async function directProxy(
   res: Response,
   baseUrl: string,
   token: string,
-  partKey: string,
+  part: TrackPart,
 ): Promise<void> {
-  const target = new URL(baseUrl + partKey);
+  const target = new URL(baseUrl + part.partKey);
   const headers = plexHeaders({ "X-Plex-Token": token });
   if (req.headers.range) headers["range"] = req.headers.range;
 
@@ -123,6 +134,10 @@ async function directProxy(
     ]) {
       const v = upstream.headers.get(h);
       if (v) res.setHeader(h, v);
+    }
+    if (!res.getHeader("content-type")) {
+      const mime = CODEC_MIME[part.codec] ?? CODEC_MIME[part.container];
+      if (mime) res.setHeader("content-type", mime);
     }
     if (!res.getHeader("accept-ranges")) res.setHeader("accept-ranges", "bytes");
     if (!upstream.body) return void res.end();

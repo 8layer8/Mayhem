@@ -13,6 +13,7 @@ export function AudioEngine() {
   const refs = [useRef<HTMLAudioElement>(null), useRef<HTMLAudioElement>(null)];
   const activeIdx = useRef(0);
   const loadedKey = useRef<[string | null, string | null]>([null, null]);
+  const transcodeFallback = useRef<[boolean, boolean]>([false, false]);
 
   const queue = usePlayer((s) => s.queue);
   const index = usePlayer((s) => s.index);
@@ -37,6 +38,21 @@ export function AudioEngine() {
   const active = () => refs[activeIdx.current].current;
   const idle = () => refs[activeIdx.current === 0 ? 1 : 0].current;
 
+  const loadTrack = (el: HTMLAudioElement, idx: number, ratingKey: string, transcode = false) => {
+    loadedKey.current[idx] = ratingKey;
+    transcodeFallback.current[idx] = transcode;
+    el.src = streamUrl(ratingKey, transcode);
+    el.load();
+  };
+
+  const onStreamError = (idx: number) => () => {
+    const el = refs[idx].current;
+    const ratingKey = loadedKey.current[idx];
+    if (!el || !ratingKey || transcodeFallback.current[idx]) return;
+    loadTrack(el, idx, ratingKey, true);
+    if (idx === activeIdx.current && isPlaying) void el.play().catch(() => undefined);
+  };
+
   // Load + play the current track (swapping to a preloaded element if possible).
   useEffect(() => {
     if (!current) {
@@ -50,11 +66,7 @@ export function AudioEngine() {
       activeIdx.current = idleIdx;
     } else if (loadedKey.current[activeIdx.current] !== current.ratingKey) {
       const el = active();
-      if (el) {
-        el.src = streamUrl(current.ratingKey);
-        el.load();
-        loadedKey.current[activeIdx.current] = current.ratingKey;
-      }
+      if (el) loadTrack(el, activeIdx.current, current.ratingKey);
     }
     const el = active();
     if (el) {
@@ -95,15 +107,26 @@ export function AudioEngine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seekTo]);
 
-  // Preload the next track into the idle element.
+  // Preload the next track after the current one can play (avoids competing downloads).
   useEffect(() => {
-    const idleEl = idle();
+    const el = active();
     const idleIdx = activeIdx.current === 0 ? 1 : 0;
-    if (nextTrack && idleEl && loadedKey.current[idleIdx] !== nextTrack.ratingKey) {
-      idleEl.src = streamUrl(nextTrack.ratingKey);
-      idleEl.load();
-      loadedKey.current[idleIdx] = nextTrack.ratingKey;
+    if (!el || !nextTrack) return;
+
+    const preload = () => {
+      const idleEl = idle();
+      if (idleEl && loadedKey.current[idleIdx] !== nextTrack.ratingKey) {
+        loadTrack(idleEl, idleIdx, nextTrack.ratingKey);
+      }
+    };
+
+    if (el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+      preload();
+      return;
     }
+
+    el.addEventListener("canplay", preload, { once: true });
+    return () => el.removeEventListener("canplay", preload);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextTrack?.ratingKey, current?.ratingKey]);
 
@@ -124,8 +147,10 @@ export function AudioEngine() {
           key={idx}
           ref={ref}
           preload="auto"
+          playsInline
           onTimeUpdate={onTimeUpdate(idx)}
           onEnded={onEnded(idx)}
+          onError={onStreamError(idx)}
         />
       ))}
     </>

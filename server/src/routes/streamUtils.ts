@@ -10,7 +10,10 @@ import type { Request, Response } from "express";
  */
 export function abortOnClose(req: Request, res: Response): AbortSignal {
   const ac = new AbortController();
-  const abort = () => ac.abort();
+  const abort = () => {
+    if (!ac.signal.aborted) ac.abort();
+  };
+  req.on("close", abort);
   res.once("close", abort);
   return ac.signal;
 }
@@ -29,27 +32,37 @@ export async function pipeUpstreamBody(
   try {
     await pipeline(Readable.fromWeb(body as never), res);
   } catch (err) {
-    const code = (err as NodeJS.ErrnoException)?.code;
-    const name = (err as Error)?.name;
-    // Client disconnect / upstream reset is routine for media streams.
-    if (
-      code !== "ERR_STREAM_PREMATURE_CLOSE" &&
-      code !== "UND_ERR_SOCKET" &&
-      name !== "AbortError"
-    ) {
+    if (!isDisconnect(err)) {
       console.error("[stream] pipe error", err);
     }
-    if (!res.writableEnded) res.destroy();
+    if (!res.writableEnded && !res.destroyed) res.destroy();
   }
+}
+
+function asErr(value: unknown): Error & { code?: string; cause?: unknown } {
+  return value as Error & { code?: string; cause?: unknown };
 }
 
 /** True when the error is just the client/upstream hanging up, not a real fault. */
 export function isDisconnect(err: unknown): boolean {
-  const code = (err as NodeJS.ErrnoException)?.code;
-  const name = (err as Error)?.name;
-  return (
-    name === "AbortError" ||
-    code === "UND_ERR_SOCKET" ||
-    code === "ERR_STREAM_PREMATURE_CLOSE"
-  );
+  let current: unknown = err;
+  while (current) {
+    const e = asErr(current);
+    const code = e.code;
+    const name = e.name;
+    const message = e.message ?? "";
+    if (
+      name === "AbortError" ||
+      code === "UND_ERR_SOCKET" ||
+      code === "UND_ERR_ABORTED" ||
+      code === "ERR_STREAM_PREMATURE_CLOSE" ||
+      code === "ECONNRESET" ||
+      message === "terminated" ||
+      message.includes("other side closed")
+    ) {
+      return true;
+    }
+    current = e.cause;
+  }
+  return false;
 }

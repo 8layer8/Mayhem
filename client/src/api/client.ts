@@ -52,6 +52,7 @@ export function artUrl(thumb: string | undefined, size = 300): string | undefine
 }
 
 /** Build a same-origin audio stream URL for a track. */
-export function streamUrl(ratingKey: string): string {
-  return `/api/stream/${encodeURIComponent(ratingKey)}`;
+export function streamUrl(ratingKey: string, transcode = false): string {
+  const base = `/api/stream/${encodeURIComponent(ratingKey)}`;
+  return transcode ? `${base}?transcode=1` : base;
 }

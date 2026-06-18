@@ -1,7 +1,12 @@
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
+/** Strip a leading "The " for artist-style alphabetization. */
+function sortKey(title: string): string {
+  return title.trim().replace(/^the\s+/i, "");
+}
+
 export function alphaKey(title: string): string {
-  const first = title.trim().charAt(0).toUpperCase();
+  const first = sortKey(title).charAt(0).toUpperCase();
   if (first >= "A" && first <= "Z") return first;
   return "#";
 }
@@ -10,7 +15,7 @@ export function groupByLetter<T extends { title: string }>(
   items: T[],
 ): { letter: string; items: T[] }[] {
   const sorted = [...items].sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, { sensitivity: "base" }),
+    sortKey(a.title).localeCompare(sortKey(b.title), undefined, { sensitivity: "base" }),
   );
 
   const groups = new Map<string, T[]>();

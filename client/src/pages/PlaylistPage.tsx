@@ -6,6 +6,7 @@ import {
   removePlaylistItem,
 } from "../api/playlists";
 import { getPlaylistTracks } from "../api/plex";
+import { BackButton } from "../components/BackButton";
 import { GlyphClose, GlyphGrip, GlyphPlay } from "../components/Glyphs";
 import { usePlayer } from "../store/player";
 import { formatDuration } from "../util/format";
@@ -52,6 +53,7 @@ export function PlaylistPage() {
 
   return (
     <div className="page">
+      <BackButton fallback="/playlists" />
       <div className="button-row">
         <button className="btn-primary" disabled={!tracks?.length} onClick={() => tracks && playTracks(tracks, 0, ratingKey)}>
           <GlyphPlay /> Play

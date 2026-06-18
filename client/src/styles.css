@@ -500,6 +500,12 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
   flex-wrap: wrap;
 }
+.back-btn {
+  margin-bottom: 1rem;
+}
+.back-btn + h2 {
+  margin-top: 0;
+}
 
 /* --- Track list --- */
 .track-list {

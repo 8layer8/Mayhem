@@ -3,11 +3,13 @@ import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { getMe } from "./api/auth";
 import { AudioEngine } from "./audio/AudioEngine";
+import { DocumentTitle } from "./components/DocumentTitle";
 import { NowPlayingBar } from "./components/NowPlayingBar";
 import { NowPlayingScreen } from "./components/NowPlayingScreen";
 import { QueuePanel } from "./components/QueuePanel";
 import { Sidebar } from "./components/Sidebar";
 import { AlbumPage } from "./pages/AlbumPage";
+import { AlbumsPage } from "./pages/AlbumsPage";
 import { ArtistPage } from "./pages/ArtistPage";
 import { ArtistsPage } from "./pages/ArtistsPage";
 import { AuthCallback } from "./pages/AuthCallback";
@@ -20,10 +22,13 @@ import { ServerSelect } from "./pages/ServerSelect";
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="*" element={<MainApp />} />
-    </Routes>
+    <>
+      <DocumentTitle />
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="*" element={<MainApp />} />
+      </Routes>
+    </>
   );
 }
 
@@ -56,6 +61,7 @@ function MainApp() {
           <Routes>
             <Route path="/" element={<Library />} />
             <Route path="/artists" element={<ArtistsPage />} />
+            <Route path="/albums" element={<AlbumsPage />} />
             <Route path="/artist/:ratingKey" element={<ArtistPage />} />
             <Route path="/album/:ratingKey" element={<AlbumPage />} />
             <Route path="/playlists" element={<PlaylistsPage />} />

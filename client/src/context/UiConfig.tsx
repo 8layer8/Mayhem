@@ -20,8 +20,7 @@ export function UiConfigProvider({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.uiScale = data.uiScale;
-    document.title = data.appTitle;
-  }, [data.uiScale, data.appTitle]);
+  }, [data.uiScale]);
 
   return <UiConfigContext.Provider value={data}>{children}</UiConfigContext.Provider>;
 }

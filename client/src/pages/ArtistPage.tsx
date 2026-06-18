@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { getArtistAlbums } from "../api/plex";
 import { AlbumGrid } from "../components/AlbumGrid";
+import { BackButton } from "../components/BackButton";
 
 export function ArtistPage() {
   const { ratingKey = "" } = useParams();
@@ -13,6 +14,7 @@ export function ArtistPage() {
 
   return (
     <div className="page">
+      <BackButton fallback="/artists" />
       <h2>Albums</h2>
       {isLoading && <p className="muted">Loading…</p>}
       {albums && <AlbumGrid albums={albums} />}

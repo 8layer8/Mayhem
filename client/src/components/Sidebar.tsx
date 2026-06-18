@@ -39,6 +39,11 @@ export function Sidebar({
           </NavLink>
         </li>
         <li>
+          <NavLink to="/albums" className={link}>
+            💿 Albums
+          </NavLink>
+        </li>
+        <li>
           <NavLink to="/search" className={link}>
             🔍 Search
           </NavLink>

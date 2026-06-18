@@ -118,6 +118,13 @@ export async function getArtists(sectionId: string): Promise<Artist[]> {
   }));
 }
 
+export async function getAlbums(sectionId: string): Promise<Album[]> {
+  const data = await api.get<MediaContainer<RawMetadata>>(
+    `/api/plex/library/sections/${sectionId}/all?type=9`,
+  );
+  return (data.MediaContainer.Metadata ?? []).map(toAlbum);
+}
+
 export async function getRecentAlbums(sectionId: string): Promise<Album[]> {
   const data = await api.get<MediaContainer<RawMetadata>>(
     `/api/plex/library/sections/${sectionId}/all?type=9&sort=addedAt:desc&limit=50`,

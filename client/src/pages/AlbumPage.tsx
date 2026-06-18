@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { getAlbum, getAlbumTracks } from "../api/plex";
-import { Artwork } from "../components/Artwork";
-import { TrackList } from "../components/TrackList";
 import { AddToPlaylist } from "../components/AddToPlaylist";
+import { Artwork } from "../components/Artwork";
+import { BackButton } from "../components/BackButton";
+import { TrackList } from "../components/TrackList";
 import { usePlayer } from "../store/player";
 
 export function AlbumPage() {
@@ -24,6 +25,7 @@ export function AlbumPage() {
 
   return (
     <div className="page">
+      <BackButton fallback="/albums" />
       <div className="album-header">
         <Artwork thumb={album?.thumb} size={400} alt={album?.title} className="large" />
         <div className="album-meta">

@@ -6,6 +6,7 @@ export interface UiConfig {
   appTitle: string;
   uiScale: UiScale;
   visualizerEnabled: boolean;
+  fullScreenFadePercent: number;
 }
 
 export const HERO_ART_PIXELS: Record<UiScale, number> = {

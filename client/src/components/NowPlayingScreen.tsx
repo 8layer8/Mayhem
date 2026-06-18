@@ -33,9 +33,18 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
   });
   const mediaLabel = mediaInfo ? formatTrackMedia(mediaInfo) : null;
 
+  const { fullScreenFadePercent } = useUiConfig();
   const isExtraLarge = uiScale === "extra-large";
   const isFull = uiScale === "full";
   const fullBgUrl = isFull ? artUrl(current?.thumb, HERO_ART_PIXELS.full) : undefined;
+  const fadeScale = fullScreenFadePercent / 100;
+  const screenStyle = isFull
+    ? ({
+        "--np-full-fade-top": 0.65 * fadeScale,
+        "--np-full-fade-mid": 0.2 * fadeScale,
+        "--np-full-fade-bottom": 0.88 * fadeScale,
+      } as CSSProperties)
+    : undefined;
 
   return (
     <div
@@ -46,6 +55,7 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
       ]
         .filter(Boolean)
         .join(" ")}
+      style={screenStyle}
     >
       {isFull && fullBgUrl && (
         <div

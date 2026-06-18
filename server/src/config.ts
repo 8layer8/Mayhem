@@ -26,10 +26,23 @@ export const UI_SCALE = (() => {
 /** Show the frequency visualizer on the now-playing screen (full mode always disables it). */
 export const VISUALIZER_ENABLED = process.env.VISUALIZER_ENABLED !== "false";
 
+/** Dark overlay strength on the full-screen now-playing view (0–100). */
+export const FULL_SCREEN_FADE_PERCENT = (() => {
+  const raw = process.env.FULL_SCREEN_FADE_PERCENT;
+  if (!raw) return 45;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0 || n > 100) {
+    console.warn(`[config] Invalid FULL_SCREEN_FADE_PERCENT "${raw}"; using 45.`);
+    return 45;
+  }
+  return Math.round(n);
+})();
+
 export interface PublicUiConfig {
   appTitle: string;
   uiScale: UiScale;
   visualizerEnabled: boolean;
+  fullScreenFadePercent: number;
 }
 
 export function getPublicUiConfig(): PublicUiConfig {
@@ -37,6 +50,7 @@ export function getPublicUiConfig(): PublicUiConfig {
     appTitle: APP_TITLE,
     uiScale: UI_SCALE,
     visualizerEnabled: UI_SCALE !== "full" && VISUALIZER_ENABLED,
+    fullScreenFadePercent: FULL_SCREEN_FADE_PERCENT,
   };
 }
 

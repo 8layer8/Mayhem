@@ -17,6 +17,8 @@ services:
       UI_SCALE: ${UI_SCALE:-medium}
       # Show the frequency visualizer on the now-playing screen (default: true).
       VISUALIZER_ENABLED: ${VISUALIZER_ENABLED:-true}
+      # Dark overlay on full-screen now-playing (0–100, default: 45). Only when UI_SCALE=full.
+      FULL_SCREEN_FADE_PERCENT: ${FULL_SCREEN_FADE_PERCENT:-45}
     volumes:
       - mayhem-data:/data
     restart: unless-stopped

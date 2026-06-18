@@ -6,6 +6,7 @@ const DEFAULT_CONFIG: UiConfig = {
   appTitle: "Mayhem",
   uiScale: "medium",
   visualizerEnabled: true,
+  fullScreenFadePercent: 45,
 };
 
 const UiConfigContext = createContext<UiConfig>(DEFAULT_CONFIG);

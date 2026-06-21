@@ -1,12 +1,13 @@
 # Mayhem
 
-A self-hosted, web-based music player for your **Plex Media Server**. Sign in with your Plex account, pick a server, and browse / search / play
-your music library from any browser — with a now-playing screen, play queue, playlist editing,
-best-effort gapless playback, and an audio visualizer.
+A self-hosted, web-based music player for your **Plex Media Server** to play music in your Tesla. Sign in with your Plex account, pick a server, and browse / search / play
+your music library from any browser — with a now-playing screen, play queue, playlist editing, best-effort gapless playback, and an audio visualizer.
 
 It runs as a single Docker container: a small Node/Express backend handles Plex authentication
 and **proxies all Plex API and audio traffic** (so your Plex token never reaches the browser and
 there are no CORS headaches), and serves a React single-page app.
+
+The idea here is to have a web based audio player for the Tesla to use in the web browser, and make it big and easy to use (you're driving a car right?) 
 
 ## Why?
 
@@ -14,7 +15,7 @@ Because Plexamp is the best and there's no way to have it in a Tesla besides Blu
 
 It does not have all of Plexamp's features, far from it. However, it does give you a nice web-based interface for all your Plex based music. It can run fullscreen or the standard 2/3rds while driving. It works while the car is driving, while navigation is active, while backing up, while sitting still, etc. It has a Visualizer spectrum analyzer (you can turn it off). The UI is nice and snappy and easy to use while driving (please pay attention to the road!) with big buttons and visual feedback.
 
-It tries to not transcode anything, it plays everything I've thrown at it from 24khz mono Audiobooks to 4mbit FLAC. Cell coverage will come into play for the higher bitrate FLACs, that's just the way it is, we're streaming everything here.
+It tries to not transcode anything, it plays everything I've thrown at it from 24khz mono Audiobooks to 4mbit FLAC. Premium connectivity is required (probably, I can't test it in tethered mode, maybe somebody can let me know.) Cell coverage quality will come into play for the higher bitrate FLACs, that's just the way it is, we're streaming everything here, there's no local media or caching involved.
 
 ## Quick start (Docker)
 
@@ -22,25 +23,40 @@ Clone this repo to your docker server.
 
 There are example docker-compose.yml files, pick what you need to suit your environment. There is a traefik/docker swarm compatible file and a regular docker version that exposes a port.
 
+- docker-compose-local.yml Starts up Mayhem on docker on port 8080. It's up to you to handle port forwarding, DNS, HTTPS etc. however, it will work when pointed to an ip and port number.
+- docker-compose-traefik.yml Starts up Mayhem and plumbs up traefik and ssl certs and DNS names, that's what Traefik is for.
+- copy either of these to be: docker-compose.yml 
+
 There are example .env files, again, pick one that suits your needs. (I like the fullscreen version)
+
+.env.fullscreen - Fullscreen album art, no visualizer
+.env.extra-large - Big album art, not quite full screen, visualizer to fill in the rest.
+.env.large - Large album art, visualizer to fill in the rest.
+.env.medium - Medium album art, visualizer to fill in the rest.
+.env.small - Small album art, visualizer to fill in the rest.
+
+You can edit these to pick your size, visualizer, SET A SESSION SECRET, adjust the fade for the album art
+
+Start up your container (building it first)
 
 ```bash
 cp .env.example .env
 # edit .env and set a long random SESSION_SECRET (openssl rand -base64 48)
-
-docker compose up --build
+start-local.sh
+# The start scripts build the docker container, set the environment variables and start the container.
+# READ them and understand what you are doing, there are docker swarm and docker local commands. If you want to run it on Kubernetes, have at it and open a PR so I can add it.
 ```
 
-To test, open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv, pick your
-server, and start playing.
+To test, open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv with YOUR plex credentials, pick your
+server (optional), switch user if needed, and start playing.
 
 You will need this available to the public internet for this to work. You can't do a VPN from the Tesla, so it has to be public, and your Plex server has to be public. If you have gone to the effort of setting up a Pi with VPN in your car, you don't need this, you should just run plexamp on the Pi and control it headlessly. That was a bridge too far for me.
 
-Once it is available on the internet, you need to go to the site from the browser in your Tesla. You can do this over http or https, by domain name or by IP address directly. That is all on you. If you made it this far, I'm sure you can handle it. I'm considering hosting this somewhere public for anyone to use (abuse) but need to see what the bandwidth/security aspects are if I do that. I would prefer to not do that at all, but if the demand is there, maybe.
+Once it is available on the internet, you need to go to the site you just built from the browser in your Tesla. You can do this over http or https, by domain name or by IP address directly. That is all on you. If you made it this far, I'm sure you can handle it. I'm considering hosting this somewhere public for anyone to use (abuse) but need to see what the bandwidth/security aspects are if I do that. The plex token is never sent to the browser which means it's on the server, which means that this may not be multi-user friendly. That may or may not be a big deal in the wild, but I can address it if needed. I would prefer to not do that at all, but if the demand is there, maybe.
 
-Note that the Plex login will open a new tab even on the Tesla browser. Sign into YOUR Plex server. It may leave the sign-in tab open and say that it failed, just close it and go back to the player tab. If you have multiple Plex servers, you will be able to choose one here. It will log you in as the owner account, but you can choose Switch User and change to your regular user with the PIN.
+Note that the Plex login will open a new tab even on the Tesla browser, and if you are stopped, the browser can go full screen and then doesn't open a tab, so you aren't really logged in. I've had much more consistent behavior logging in with the car in drive (keep your foot on the brake) so it stays in the 2/3rd screen and opens the tab. Sign into YOUR Plex server. It may leave the sign-in tab open and say that it failed, just close it and go back to the player tab. If you have multiple Plex servers, you will be able to choose one here. It will log you in as the owner account, but you can choose Switch User and change to your regular user with the PIN.
 
-You will see all your shared audio libraries, playlists, artists and a search option.
+You will see all your shared audio libraries, playlists, artists, albums and a search option.
 
 Once you are playing something, you can touch the bottom left image and pop the player fullscreen.
 

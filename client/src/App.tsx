@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { getMe } from "./api/auth";
 import { AudioEngine } from "./audio/AudioEngine";
+import { MediaSession } from "./audio/MediaSession";
 import { DocumentTitle } from "./components/DocumentTitle";
 import { NowPlayingBar } from "./components/NowPlayingBar";
 import { NowPlayingScreen } from "./components/NowPlayingScreen";
@@ -55,6 +56,7 @@ function MainApp() {
   return (
     <div className="app-shell">
       <AudioEngine />
+      <MediaSession />
       <div className="app-body">
         <Sidebar username={me.username} userThumb={me.userThumb} serverName={me.server.name} />
         <main className="content">

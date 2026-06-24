@@ -4,6 +4,7 @@ import { artUrl } from "../api/client";
 import { HERO_ART_PIXELS } from "../api/config";
 import { getTrackMediaInfo } from "../api/stream";
 import { useHeroArtPixels, useUiConfig } from "../context/UiConfig";
+import { usePreloadedImageSrc } from "../hooks/usePreloadedImageSrc";
 import { usePlayer } from "../store/player";
 import { formatTrackMedia } from "../util/formatMedia";
 import { Artwork } from "./Artwork";
@@ -37,6 +38,7 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
   const isExtraLarge = uiScale === "extra-large";
   const isFull = uiScale === "full";
   const fullBgUrl = isFull ? artUrl(current?.thumb, HERO_ART_PIXELS.full) : undefined;
+  const displayedFullBgUrl = usePreloadedImageSrc(fullBgUrl);
   const fadeScale = fullScreenFadePercent / 100;
   const screenStyle = isFull
     ? ({
@@ -57,10 +59,10 @@ export function NowPlayingScreen({ onClose }: { onClose: () => void }) {
         .join(" ")}
       style={screenStyle}
     >
-      {isFull && fullBgUrl && (
+      {isFull && displayedFullBgUrl && (
         <div
           className="np-full-bg"
-          style={{ "--np-full-bg": `url(${fullBgUrl})` } as CSSProperties}
+          style={{ "--np-full-bg": `url(${displayedFullBgUrl})` } as CSSProperties}
           aria-hidden
         />
       )}

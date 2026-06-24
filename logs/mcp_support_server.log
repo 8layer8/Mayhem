@@ -46,3 +46,9 @@
 2026-06-17 22:20:29.371 | DEBUG    | awslabs.aws_support_mcp_server.server:main:1042 | 8544234560:42881 | {'diagnostics': True} - FastMCP debug setting not available on this version
 2026-06-17 22:20:29.371 | DEBUG    | awslabs.aws_support_mcp_server.server:main:1045 | 8544234560:42881 | {'diagnostics': True} - Starting awslabs_support_mcp_server MCP server
 2026-06-17 22:20:29.371 | INFO     | awslabs.aws_support_mcp_server.server:main:1048 | 8544234560:42881 | {'diagnostics': True} - Starting AWS Support MCP Server with stdio transport
+2026-06-23 22:25:50.294 | INFO     | awslabs.aws_support_mcp_server.server:main:1028 | 8544234560:35812 | {'diagnostics': True} - AWS Support MCP Server starting up. Log file: /Users/brad.williamson/Development/Mayhem/logs/mcp_support_server.log
+2026-06-23 22:25:50.295 | INFO     | awslabs.aws_support_mcp_server.server:main:1030 | 8544234560:35812 | {'diagnostics': True} - Debug mode: True
+2026-06-23 22:25:50.295 | DEBUG    | awslabs.aws_support_mcp_server.server:main:1034 | 8544234560:35812 | {'diagnostics': True} - Enabling detailed performance tracking and error monitoring
+2026-06-23 22:25:50.295 | DEBUG    | awslabs.aws_support_mcp_server.server:main:1042 | 8544234560:35812 | {'diagnostics': True} - FastMCP debug setting not available on this version
+2026-06-23 22:25:50.295 | DEBUG    | awslabs.aws_support_mcp_server.server:main:1045 | 8544234560:35812 | {'diagnostics': True} - Starting awslabs_support_mcp_server MCP server
+2026-06-23 22:25:50.295 | INFO     | awslabs.aws_support_mcp_server.server:main:1048 | 8544234560:35812 | {'diagnostics': True} - Starting AWS Support MCP Server with stdio transport

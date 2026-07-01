@@ -14,12 +14,22 @@ authRouter.post("/pin", async (req, res) => {
 
   // Send the user back to the app once they finish authorizing on plex.tv.
   const origin = `${req.protocol}://${req.get("host")}`;
-  const authUrl = buildAuthUrl(pin.code, `${origin}/auth/callback`);
+  const authUrl = buildAuthUrl(pin.code, `${origin}/auth/callback?pin=${pin.id}`);
 
   session.pendingPinId = pin.id;
   await session.save();
 
   res.json({ pinId: pin.id, authUrl });
+});
+
+/** Return the in-progress PIN id stored in the server session (survives WebView storage loss). */
+authRouter.get("/pending-pin", async (req, res) => {
+  const session = await getSession(req, res);
+  const pinId = session.pendingPinId;
+  if (pinId == null || !Number.isFinite(pinId)) {
+    return res.json({ pinId: null });
+  }
+  res.json({ pinId });
 });
 
 /**

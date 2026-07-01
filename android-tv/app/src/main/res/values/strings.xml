@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mayhem</string>
+    <string name="settings_title">Mayhem Server</string>
+    <string name="server_url_hint">https://mayhem.example.com</string>
+    <string name="server_url_label">Mayhem server URL</string>
+    <string name="save_and_open">Save and open</string>
+    <string name="settings_help">Enter the URL of your self-hosted Mayhem server. The server must be reachable from this TV.</string>
+    <string name="change_server">Change server</string>
+    <string name="load_error">Could not load Mayhem. Check the server URL and network.</string>
+    <string name="webview_missing">Android System WebView is not available. Install or update WebView from the Play Store.</string>
+</resources>

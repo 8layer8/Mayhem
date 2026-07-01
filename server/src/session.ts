@@ -32,6 +32,7 @@ const sessionOptions = {
     httpOnly: true,
     secure: COOKIE_SECURE,
     sameSite: "lax" as const,
+    path: "/",
     // 30 days
     maxAge: 60 * 60 * 24 * 30,
   },

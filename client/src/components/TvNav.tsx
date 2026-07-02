@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type RefObject } from "react";
 import { NavLink } from "react-router-dom";
 import { logout } from "../api/auth";
-import { useUiConfig } from "../context/UiConfig";
 
 /** Pure-CSS nav icons (classes defined in styles.css). */
 function NavIcon({ glyph }: { glyph: string }) {
@@ -31,7 +30,6 @@ export function TvNav({
   onSwitchOpen?: () => void;
 }) {
   const queryClient = useQueryClient();
-  const { appTitle } = useUiConfig();
   const doLogout = useMutation({
     mutationFn: logout,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
@@ -42,7 +40,6 @@ export function TvNav({
 
   return (
     <header className="tv-nav">
-      <div className="tv-nav-brand">{appTitle}</div>
       <nav className="tv-nav-links" aria-label="Main">
         {NAV_ITEMS.map(({ to, label, glyph, ...rest }) => (
           <NavLink key={to} to={to} end={"end" in rest ? rest.end : undefined} className={link}>
@@ -50,24 +47,32 @@ export function TvNav({
             <span>{label}</span>
           </NavLink>
         ))}
+        <div className="tv-nav-account">
+          <button
+            ref={userButtonRef}
+            className="tv-nav-user"
+            onClick={() => onSwitchOpen?.()}
+            title={`Switch user (${username ?? "Account"})`}
+            aria-label={`Switch user, ${username ?? "Account"}`}
+          >
+            <span className="user-avatar tv-nav-avatar">
+              {userThumb ? <img src={userThumb} alt="" /> : <span>{(username ?? "?")[0]}</span>}
+            </span>
+          </button>
+          {serverName && (
+            <span className="muted small tv-nav-server" title={serverName}>
+              {serverName}
+            </span>
+          )}
+          <button
+            className="tv-nav-link tv-nav-signout"
+            onClick={() => doLogout.mutate()}
+            title="Sign out"
+          >
+            Sign out
+          </button>
+        </div>
       </nav>
-      <div className="tv-nav-account">
-        <button
-          ref={userButtonRef}
-          className="tv-nav-user"
-          onClick={() => onSwitchOpen?.()}
-          title="Switch user"
-        >
-          <span className="user-avatar small">
-            {userThumb ? <img src={userThumb} alt="" /> : <span>{(username ?? "?")[0]}</span>}
-          </span>
-          <span className="tv-nav-user-name">{username ?? "Account"}</span>
-        </button>
-        {serverName && <span className="muted small tv-nav-server">{serverName}</span>}
-        <button className="btn-secondary tv-nav-signout" onClick={() => doLogout.mutate()}>
-          Sign out
-        </button>
-      </div>
     </header>
   );
 }

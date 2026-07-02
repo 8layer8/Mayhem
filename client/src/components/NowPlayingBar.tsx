@@ -26,7 +26,15 @@ export function NowPlayingBar({ onToggleQueue, onToggleNowPlaying }: NowPlayingB
 
   return (
     <footer className="now-playing-bar">
-      <div className="np-track" onClick={onToggleNowPlaying} role="button" tabIndex={0}>
+      <div
+        className="np-track"
+        onClick={onToggleNowPlaying}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onToggleNowPlaying();
+        }}
+        role="button"
+        tabIndex={0}
+      >
         <Artwork thumb={current?.thumb} size={96} alt={current?.title} className="small" />
         <div className="np-text">
           <div className="np-title">{current?.title ?? "Nothing playing"}</div>

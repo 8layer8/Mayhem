@@ -21,6 +21,9 @@ export const startPin = () =>
 export const pollPin = (pinId: number) =>
   api.get<{ authenticated: boolean }>(`/api/auth/pin/${pinId}`);
 
+export const getPendingPin = () =>
+  api.get<{ pinId: number | null }>("/api/auth/pending-pin");
+
 export const logout = () => api.post("/api/auth/logout");
 
 export const listServers = () =>

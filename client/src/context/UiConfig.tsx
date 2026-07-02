@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext, useLayoutEffect, type ReactNode } from "react";
 import { getUiConfig, HERO_ART_PIXELS, type UiConfig } from "../api/config";
+import { effectiveTvUiScale } from "../util/tv";
 
 const DEFAULT_CONFIG: UiConfig = {
   appTitle: "Mayhem",
@@ -18,11 +19,14 @@ export function UiConfigProvider({ children }: { children: ReactNode }) {
     staleTime: Infinity,
   });
 
-  useLayoutEffect(() => {
-    document.documentElement.dataset.uiScale = data.uiScale;
-  }, [data.uiScale]);
+  const uiScale = effectiveTvUiScale(data.uiScale) as UiConfig["uiScale"];
+  const config = uiScale === data.uiScale ? data : { ...data, uiScale };
 
-  return <UiConfigContext.Provider value={data}>{children}</UiConfigContext.Provider>;
+  useLayoutEffect(() => {
+    document.documentElement.dataset.uiScale = uiScale;
+  }, [uiScale]);
+
+  return <UiConfigContext.Provider value={config}>{children}</UiConfigContext.Provider>;
 }
 
 export function useUiConfig(): UiConfig {

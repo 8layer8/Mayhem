@@ -5,19 +5,63 @@ export function prefersSameTabAuth(): boolean {
   const ua = navigator.userAgent;
   if (/Tesla/i.test(ua)) return true;
   // Common embedded / TV browsers with poor popup support.
-  if (/Web0S|SmartTV|NetCast|Tizen|HbbTV|CrKey/i.test(ua)) return true;
+  if (/Web0S|SmartTV|NetCast|Tizen|HbbTV|CrKey|Android TV|GoogleTV|Google TV|AFT[A-Z]|MayhemAndroidTV/i.test(ua)) {
+    return true;
+  }
   return false;
 }
 
 export function storePendingPin(pinId: number): void {
-  sessionStorage.setItem(PENDING_PIN_KEY, String(pinId));
+  const value = String(pinId);
+  try {
+    sessionStorage.setItem(PENDING_PIN_KEY, value);
+  } catch {
+    /* WebView may block storage in some modes */
+  }
+  try {
+    localStorage.setItem(PENDING_PIN_KEY, value);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Read the pending PIN without removing it. */
+export function peekPendingPin(): number | null {
+  return parsePinId(readPendingPinRaw());
 }
 
 export function takePendingPin(): number | null {
-  const raw = sessionStorage.getItem(PENDING_PIN_KEY);
-  sessionStorage.removeItem(PENDING_PIN_KEY);
+  const raw = readPendingPinRaw();
+  clearPendingPin();
+  return parsePinId(raw);
+}
+
+function readPendingPinRaw(): string | null {
+  try {
+    return sessionStorage.getItem(PENDING_PIN_KEY) ?? localStorage.getItem(PENDING_PIN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingPin(): void {
+  try {
+    sessionStorage.removeItem(PENDING_PIN_KEY);
+    localStorage.removeItem(PENDING_PIN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function parsePinId(raw: string | null): number | null {
   const id = raw ? Number(raw) : NaN;
   return Number.isFinite(id) ? id : null;
+}
+
+/** Resolve PIN id from callback URL, browser storage, or null. */
+export function pinIdFromCallbackUrl(): number | null {
+  const params = new URLSearchParams(window.location.search);
+  return parsePinId(params.get("pin") ?? params.get("pinId"));
 }
 
 /**

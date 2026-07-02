@@ -29,11 +29,11 @@ There are example docker-compose.yml files, pick what you need to suit your envi
 
 There are example .env files, again, pick one that suits your needs. (I like the fullscreen version)
 
-- .env.fullscreen - Fullscreen album art, no visualizer
-- .env.extra-large - Big album art, not quite full screen, visualizer to fill in the rest.
-- .env.large - Large album art, visualizer to fill in the rest.
-- .env.medium - Medium album art, visualizer to fill in the rest.
-- .env.small - Small album art, visualizer to fill in the rest.
+.env.fullscreen - Fullscreen album art, no visualizer
+.env.extra-large - Big album art, not quite full screen, visualizer to fill in the rest.
+.env.large - Large album art, visualizer to fill in the rest.
+.env.medium - Medium album art, visualizer to fill in the rest.
+.env.small - Small album art, visualizer to fill in the rest.
 
 You can edit these to pick your size, visualizer, SET A SESSION SECRET, adjust the fade for the album art
 
@@ -47,7 +47,7 @@ start-local.sh
 # READ them and understand what you are doing, there are docker swarm and docker local commands. If you want to run it on Kubernetes, have at it and open a PR so I can add it.
 ```
 
-To test locally, open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv with YOUR plex credentials, pick your
+To test, open <http://localhost:8080>, click **Sign in with Plex**, authorize on plex.tv with YOUR plex credentials, pick your
 server (optional), switch user if needed, and start playing.
 
 You will need this available to the public internet for this to work. You can't do a VPN from the Tesla, so it has to be public, and your Plex server has to be public. If you have gone to the effort of setting up a Pi with VPN in your car, you don't need this, you should just run plexamp on the Pi and control it headlessly. That was a bridge too far for me.
@@ -60,7 +60,7 @@ You will see all your shared audio libraries, playlists, artists, albums and a s
 
 Once you are playing something, you can touch the bottom left image and pop the player fullscreen.
 
-The steering wheel controls do not work to control the player other than stop (sorry, I've tried a few ways, it may not ever work) so you have to run the radio like it's 1985. But you can minimize the browser (and the media player on the left) and it stays running. It allows navigation prompts to cut through, and will come back to the playing page if you touch the browser button again. Sometimes the browser remembers the site when you get back in the car, sometimes not, so favorite the site by pressing the Star. I have not had it re-prompt for login in normal use, but that's always a possibility. Check before you start driving. It does NOT need the force-it-through-youtube-hack, it just works.
+The steering wheel controls do not work to control the player (sorry) so you have to run the radio like it's 1985. But you can minimize the browser (and the media player on the left) and it stays running. It allows navigation prompts to cut through, and will come back to the playing page if you touch the browser button again. Sometimes the browser remembers the site when you get back in the car, sometimes not, so favorite the site by pressing the Star. I have not had it re-prompt for login in normal use, but that's always a possibility. Check before you start driving.
 
 ## Local development
 
@@ -94,7 +94,21 @@ npm run dev            # starts the API (8080) and the Vite dev server (5173)
 | `COOKIE_SECURE` | `false` | Set `true` when serving over HTTPS. |
 | `UI_SCALE` | `medium` | UI sizing preset: `small`, `medium`, `large`, `extra-large`, or `full`. Controls button/touch targets and now-playing album art size. `extra-large` maximizes album art. `full` uses album art as the now-playing background and disables the visualizer. |
 | `VISUALIZER_ENABLED` | `true` | Show the frequency visualizer on the now-playing screen. Ignored when `UI_SCALE=full`. |
-|`FULL_SCREEN_FADE_PERCENT` | `45` | `Dark overlay on the full-screen now-playing view (0–100, default: 45).` |
+
+## Android TV
+
+An installable Android TV app lives in [`android-tv/`](android-tv/). It wraps the web UI in a
+WebView shell with a home-screen icon, D-pad navigation, and media-key support. You still run the
+Mayhem Docker container — the APK is a remote-friendly browser pointed at your server.
+
+```bash
+cd android-tv
+./build.sh assembleDebug
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+On first launch, enter your Mayhem server URL. Use `UI_SCALE=extra-large` or `full` on the server
+for the best 10-foot UI. See [`android-tv/README.md`](android-tv/README.md) for details.
 
 ## Notes
 

@@ -5,6 +5,11 @@ import { logout } from "../api/auth";
 import { useUiConfig } from "../context/UiConfig";
 import { SwitchUserModal } from "./SwitchUserModal";
 
+/** Pure-CSS nav icons (classes defined in styles.css). */
+function NavIcon({ glyph }: { glyph: string }) {
+  return <span className={`glyph glyph-${glyph} nav-glyph`} aria-hidden />;
+}
+
 export function Sidebar({
   username,
   userThumb,
@@ -30,27 +35,27 @@ export function Sidebar({
       <ul className="nav">
         <li>
           <NavLink to="/" end className={link}>
-            🎵 Library
+            <NavIcon glyph="music" /> Library
           </NavLink>
         </li>
         <li>
           <NavLink to="/artists" className={link}>
-            🎤 Artists
+            <NavIcon glyph="mic" /> Artists
           </NavLink>
         </li>
         <li>
           <NavLink to="/albums" className={link}>
-            💿 Albums
+            <NavIcon glyph="disc" /> Albums
           </NavLink>
         </li>
         <li>
           <NavLink to="/search" className={link}>
-            🔍 Search
+            <NavIcon glyph="search" /> Search
           </NavLink>
         </li>
         <li>
           <NavLink to="/playlists" className={link}>
-            📜 Playlists
+            <NavIcon glyph="list" /> Playlists
           </NavLink>
         </li>
       </ul>

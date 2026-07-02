@@ -274,7 +274,8 @@ input[type="range"]::-moz-range-thumb {
   gap: 0.4rem;
 }
 .nav-link {
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 0.9rem 1rem;
   border-radius: 10px;
   color: var(--muted);
@@ -736,6 +737,76 @@ input[type="range"]::-moz-range-thumb {
   border-bottom: none;
   border-radius: 0.58em 0.58em 0 0;
   box-sizing: border-box;
+}
+.glyph-music {
+  position: relative;
+  width: 0.55em;
+  height: 0.9em;
+  border-left: 2px solid currentColor;
+  border-radius: 1px;
+}
+.glyph-music::before {
+  content: "";
+  position: absolute;
+  top: -0.12em;
+  left: -0.12em;
+  width: 0.38em;
+  height: 0.38em;
+  background: currentColor;
+  border-radius: 50%;
+}
+.glyph-mic {
+  position: relative;
+  width: 0.55em;
+  height: 0.85em;
+  border: 2px solid currentColor;
+  border-radius: 0.55em 0.55em 0.2em 0.2em;
+}
+.glyph-mic::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.28em;
+  width: 2px;
+  height: 0.22em;
+  background: currentColor;
+  transform: translateX(-50%);
+}
+.glyph-disc {
+  width: 0.85em;
+  height: 0.85em;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.18em var(--bg), inset 0 0 0 0.28em currentColor;
+}
+.glyph-search {
+  position: relative;
+  width: 0.72em;
+  height: 0.72em;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.glyph-search::after {
+  content: "";
+  position: absolute;
+  right: -0.22em;
+  bottom: -0.08em;
+  width: 0.32em;
+  height: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+.glyph-list {
+  width: 1em;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 0.36em currentColor, 0 0.72em currentColor;
+}
+.nav-glyph {
+  margin-right: 0.55rem;
+  font-size: 1.1em;
 }
 
 /* --- Search --- */
@@ -1298,3 +1369,139 @@ input[type="range"]::-moz-range-thumb {
 .key:disabled {
   opacity: 0.5;
 }
+
+/* --- Android TV / leanback remote navigation --- */
+.tv-nav {
+  display: none;
+}
+
+html[data-tv="true"] .sidebar {
+  display: none;
+}
+
+html[data-tv="true"] .tv-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.85rem 1.5rem;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+html[data-tv="true"] .tv-nav-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+html[data-tv="true"] .tv-nav-links {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+html[data-tv="true"] .tv-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.1rem;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  font-weight: 600;
+  min-height: var(--touch);
+}
+
+html[data-tv="true"] .tv-nav-link:hover,
+html[data-tv="true"] .tv-nav-link:focus-visible,
+html[data-tv="true"] .tv-nav-link.active {
+  background: var(--bg-elev-2);
+  color: var(--text);
+}
+
+html[data-tv="true"] .tv-nav-account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+html[data-tv="true"] .tv-nav-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  min-height: var(--touch);
+}
+
+html[data-tv="true"] .tv-nav-user:focus-visible {
+  background: var(--bg-elev-2);
+}
+
+html[data-tv="true"] .tv-nav-user-name {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-tv="true"] .tv-nav-server {
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-tv="true"] .tv-nav-signout {
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+}
+
+html[data-tv="true"] .app-body {
+  flex-direction: column;
+}
+
+html[data-tv="true"] .page {
+  padding: 1.5rem 2rem 2rem;
+}
+
+html[data-tv="true"] .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+html[data-tv="true"] .card:focus-visible {
+  background: var(--bg-elev);
+  transform: scale(1.03);
+}
+
+html[data-tv="true"] .card:focus-visible .artwork {
+  outline: 4px solid var(--accent);
+}
+
+html[data-tv="true"] .tab:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+html[data-tv="true"] .track-row:focus-within {
+  background: var(--bg-elev);
+}
+
+html[data-tv="true"] .tv-see-all {
+  display: inline-block;
+  margin: 0.5rem 0 1.5rem;
+}
+
+html[data-tv="true"] .now-playing-bar .np-track:focus-visible {
+  background: var(--bg-elev-2);
+  border-radius: 10px;
+}
+

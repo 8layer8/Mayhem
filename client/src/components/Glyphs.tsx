@@ -39,3 +39,23 @@ export function GlyphBack({ className }: { className?: string }) {
 export function GlyphLock({ className }: { className?: string }) {
   return <span className={glyphClass("glyph-lock", className)} aria-hidden />;
 }
+
+export function GlyphMusic({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-music", className)} aria-hidden />;
+}
+
+export function GlyphMic({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-mic", className)} aria-hidden />;
+}
+
+export function GlyphDisc({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-disc", className)} aria-hidden />;
+}
+
+export function GlyphSearch({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-search", className)} aria-hidden />;
+}
+
+export function GlyphList({ className }: { className?: string }) {
+  return <span className={glyphClass("glyph-list", className)} aria-hidden />;
+}

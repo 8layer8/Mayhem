@@ -3,21 +3,19 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { logout } from "../api/auth";
 import { useUiConfig } from "../context/UiConfig";
-import {
-  GlyphDisc,
-  GlyphList,
-  GlyphMic,
-  GlyphMusic,
-  GlyphSearch,
-} from "./Glyphs";
 import { SwitchUserModal } from "./SwitchUserModal";
 
+/** Pure-CSS nav icons (classes defined in styles.css). */
+function NavIcon({ glyph }: { glyph: string }) {
+  return <span className={`glyph glyph-${glyph} nav-glyph`} aria-hidden />;
+}
+
 const NAV_ITEMS = [
-  { to: "/", end: true, label: "Library", Icon: GlyphMusic },
-  { to: "/playlists", label: "Playlists", Icon: GlyphList },
-  { to: "/artists", label: "Artists", Icon: GlyphMic },
-  { to: "/albums", label: "Albums", Icon: GlyphDisc },
-  { to: "/search", label: "Search", Icon: GlyphSearch },
+  { to: "/", end: true, label: "Library", glyph: "music" },
+  { to: "/playlists", label: "Playlists", glyph: "list" },
+  { to: "/artists", label: "Artists", glyph: "mic" },
+  { to: "/albums", label: "Albums", glyph: "disc" },
+  { to: "/search", label: "Search", glyph: "search" },
 ] as const;
 
 export function TvNav({
@@ -44,9 +42,9 @@ export function TvNav({
     <header className="tv-nav">
       <div className="tv-nav-brand">{appTitle}</div>
       <nav className="tv-nav-links" aria-label="Main">
-        {NAV_ITEMS.map(({ to, label, Icon, ...rest }) => (
+        {NAV_ITEMS.map(({ to, label, glyph, ...rest }) => (
           <NavLink key={to} to={to} end={"end" in rest ? rest.end : undefined} className={link}>
-            <Icon className="nav-glyph" />
+            <NavIcon glyph={glyph} />
             <span>{label}</span>
           </NavLink>
         ))}

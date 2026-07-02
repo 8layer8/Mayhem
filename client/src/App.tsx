@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { getMe } from "./api/auth";
 import { AudioEngine } from "./audio/AudioEngine";
@@ -9,6 +9,8 @@ import { NowPlayingBar } from "./components/NowPlayingBar";
 import { NowPlayingScreen } from "./components/NowPlayingScreen";
 import { QueuePanel } from "./components/QueuePanel";
 import { Sidebar } from "./components/Sidebar";
+import { TvNav } from "./components/TvNav";
+import { useTvKeys } from "./hooks/useTvKeys";
 import { AlbumPage } from "./pages/AlbumPage";
 import { AlbumsPage } from "./pages/AlbumsPage";
 import { ArtistPage } from "./pages/ArtistPage";
@@ -20,6 +22,7 @@ import { PlaylistPage } from "./pages/PlaylistPage";
 import { PlaylistsPage } from "./pages/PlaylistsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { ServerSelect } from "./pages/ServerSelect";
+import { isTvBrowser } from "./util/tv";
 
 export function App() {
   return (
@@ -42,6 +45,21 @@ function MainApp() {
 
   const [queueOpen, setQueueOpen] = useState(false);
   const [nowPlayingOpen, setNowPlayingOpen] = useState(false);
+  const tv = isTvBrowser();
+
+  const handleBack = useCallback(() => {
+    if (nowPlayingOpen) {
+      setNowPlayingOpen(false);
+      return true;
+    }
+    if (queueOpen) {
+      setQueueOpen(false);
+      return true;
+    }
+    return false;
+  }, [nowPlayingOpen, queueOpen]);
+
+  useTvKeys({ onBack: handleBack });
 
   if (isLoading) {
     return <div className="centered-screen muted">Loading…</div>;
@@ -53,12 +71,19 @@ function MainApp() {
     return <ServerSelect />;
   }
 
+  const navProps = {
+    username: me.username,
+    userThumb: me.userThumb,
+    serverName: me.server.name,
+  };
+
   return (
     <div className="app-shell">
       <AudioEngine />
       <MediaSession />
+      {tv && <TvNav {...navProps} />}
       <div className="app-body">
-        <Sidebar username={me.username} userThumb={me.userThumb} serverName={me.server.name} />
+        {!tv && <Sidebar {...navProps} />}
         <main className="content">
           <Routes>
             <Route path="/" element={<Library />} />

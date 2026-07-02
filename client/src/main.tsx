@@ -4,7 +4,10 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { UiConfigProvider } from "./context/UiConfig";
+import { initTvMode } from "./util/tv";
 import "./styles.css";
+
+initTvMode();
 
 const queryClient = new QueryClient({
   defaultOptions: {

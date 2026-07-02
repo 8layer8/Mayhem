@@ -1,25 +1,58 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { listUsers, switchUser, type HomeUser } from "../api/users";
-import { GlyphBack, GlyphBackspace, GlyphCheck, GlyphClose, GlyphLock } from "./Glyphs";
 import { usePlayer } from "../store/player";
+import { isTvBrowser } from "../util/tv";
+import { GlyphBack, GlyphBackspace, GlyphCheck, GlyphClose, GlyphLock } from "./Glyphs";
+
+function focusFirstInModal(modalEl: HTMLElement, ...selectors: string[]) {
+  for (const selector of selectors) {
+    const target = modalEl.querySelector<HTMLElement>(selector);
+    if (target) {
+      target.focus();
+      return;
+    }
+  }
+}
 
 /** Large, touch-friendly modal for switching between Plex Home users. */
-export function SwitchUserModal({ onClose }: { onClose: () => void }) {
+export function SwitchUserModal({
+  onClose,
+  returnFocusRef,
+}: {
+  onClose: () => void;
+  /** Element to focus after a successful switch on TV (usually the nav user button). */
+  returnFocusRef?: RefObject<HTMLElement | null>;
+}) {
   const queryClient = useQueryClient();
   const clearQueue = usePlayer((s) => s.clearQueue);
   const [pinFor, setPinFor] = useState<HomeUser | null>(null);
   const [pin, setPin] = useState("");
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closedBySuccess = useRef(false);
+  const tv = isTvBrowser();
 
   const { data, isLoading } = useQuery({ queryKey: ["users"], queryFn: listUsers });
 
+  const restoreTvFocus = (serverCleared: boolean) => {
+    requestAnimationFrame(() => {
+      if (serverCleared) {
+        document.querySelector<HTMLElement>(".server-item")?.focus();
+        return;
+      }
+      returnFocusRef?.current?.focus();
+    });
+  };
+
   const doSwitch = useMutation({
     mutationFn: ({ uuid, pin }: { uuid: string; pin?: string }) => switchUser(uuid, pin),
-    onSuccess: () => {
-      // The whole library is user-specific — reset playback and refetch all data.
+    onSuccess: async (result) => {
+      closedBySuccess.current = true;
       clearQueue();
-      queryClient.invalidateQueries();
+      await queryClient.invalidateQueries();
       onClose();
+      if (tv) restoreTvFocus(result.serverCleared);
     },
   });
 
@@ -36,9 +69,50 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
     if (pinFor && pin.length >= 4) doSwitch.mutate({ uuid: pinFor.uuid, pin });
   };
 
-  return (
+  // TV: trap focus in the modal and restore on dismiss.
+  useEffect(() => {
+    if (!tv) return;
+
+    const shell = document.querySelector(".app-shell");
+    shell?.setAttribute("inert", "");
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    return () => {
+      shell?.removeAttribute("inert");
+      if (!closedBySuccess.current) {
+        returnFocusRef?.current?.focus() ?? previousFocus?.focus();
+      }
+    };
+  }, [tv, returnFocusRef]);
+
+  // TV: move focus into the modal when content is ready.
+  useEffect(() => {
+    if (!tv || !modalRef.current) return;
+
+    if (pinFor) {
+      focusFirstInModal(modalRef.current, ".key", ".link.big-link", ".modal-close");
+      return;
+    }
+    if (isLoading) return;
+
+    focusFirstInModal(
+      modalRef.current,
+      ".user-tile:not(.current):not([disabled])",
+      ".user-tile:not([disabled])",
+      ".modal-close",
+    );
+  }, [tv, pinFor, isLoading, data]);
+
+  const modal = (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={modalRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={pinFor ? `Enter PIN for ${pinFor.title}` : "Switch user"}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="modal-close icon" onClick={onClose} title="Close">
           <GlyphClose />
         </button>
@@ -112,4 +186,6 @@ export function SwitchUserModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

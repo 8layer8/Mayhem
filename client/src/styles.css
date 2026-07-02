@@ -1505,3 +1505,24 @@ html[data-tv="true"] .now-playing-bar .np-track:focus-visible {
   border-radius: 10px;
 }
 
+html[data-tv="true"] .user-tile:focus-visible,
+html[data-tv="true"] .key:focus-visible,
+html[data-tv="true"] .modal-close:focus-visible,
+html[data-tv="true"] .link.big-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html[data-tv="true"] .user-tile:focus-visible {
+  border-color: var(--accent);
+}
+
+html[data-tv="true"] .key:focus-visible:not(:disabled) {
+  background: var(--border);
+}
+
+html[data-tv="true"] .server-item:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+

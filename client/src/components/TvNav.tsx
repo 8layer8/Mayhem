@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type RefObject } from "react";
 import { NavLink } from "react-router-dom";
 import { logout } from "../api/auth";
 import { useUiConfig } from "../context/UiConfig";
-import { SwitchUserModal } from "./SwitchUserModal";
 
 /** Pure-CSS nav icons (classes defined in styles.css). */
 function NavIcon({ glyph }: { glyph: string }) {
@@ -22,14 +21,17 @@ export function TvNav({
   username,
   userThumb,
   serverName,
+  userButtonRef,
+  onSwitchOpen,
 }: {
   username?: string | null;
   userThumb?: string | null;
   serverName?: string | null;
+  userButtonRef?: RefObject<HTMLButtonElement | null>;
+  onSwitchOpen?: () => void;
 }) {
   const queryClient = useQueryClient();
   const { appTitle } = useUiConfig();
-  const [switchOpen, setSwitchOpen] = useState(false);
   const doLogout = useMutation({
     mutationFn: logout,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
@@ -50,7 +52,12 @@ export function TvNav({
         ))}
       </nav>
       <div className="tv-nav-account">
-        <button className="tv-nav-user" onClick={() => setSwitchOpen(true)} title="Switch user">
+        <button
+          ref={userButtonRef}
+          className="tv-nav-user"
+          onClick={() => onSwitchOpen?.()}
+          title="Switch user"
+        >
           <span className="user-avatar small">
             {userThumb ? <img src={userThumb} alt="" /> : <span>{(username ?? "?")[0]}</span>}
           </span>
@@ -61,7 +68,6 @@ export function TvNav({
           Sign out
         </button>
       </div>
-      {switchOpen && <SwitchUserModal onClose={() => setSwitchOpen(false)} />}
     </header>
   );
 }

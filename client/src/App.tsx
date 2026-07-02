@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { getMe } from "./api/auth";
 import { AudioEngine } from "./audio/AudioEngine";
@@ -9,6 +9,7 @@ import { NowPlayingBar } from "./components/NowPlayingBar";
 import { NowPlayingScreen } from "./components/NowPlayingScreen";
 import { QueuePanel } from "./components/QueuePanel";
 import { Sidebar } from "./components/Sidebar";
+import { SwitchUserModal } from "./components/SwitchUserModal";
 import { TvNav } from "./components/TvNav";
 import { useTvKeys } from "./hooks/useTvKeys";
 import { AlbumPage } from "./pages/AlbumPage";
@@ -45,9 +46,15 @@ function MainApp() {
 
   const [queueOpen, setQueueOpen] = useState(false);
   const [nowPlayingOpen, setNowPlayingOpen] = useState(false);
+  const [switchOpen, setSwitchOpen] = useState(false);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
   const tv = isTvBrowser();
 
   const handleBack = useCallback(() => {
+    if (switchOpen) {
+      setSwitchOpen(false);
+      return true;
+    }
     if (nowPlayingOpen) {
       setNowPlayingOpen(false);
       return true;
@@ -57,7 +64,7 @@ function MainApp() {
       return true;
     }
     return false;
-  }, [nowPlayingOpen, queueOpen]);
+  }, [switchOpen, nowPlayingOpen, queueOpen]);
 
   useTvKeys({ onBack: handleBack });
 
@@ -81,7 +88,16 @@ function MainApp() {
     <div className="app-shell">
       <AudioEngine />
       <MediaSession />
-      {tv && <TvNav {...navProps} />}
+      {tv && (
+        <TvNav
+          {...navProps}
+          userButtonRef={userButtonRef}
+          onSwitchOpen={() => setSwitchOpen(true)}
+        />
+      )}
+      {tv && switchOpen && (
+        <SwitchUserModal onClose={() => setSwitchOpen(false)} returnFocusRef={userButtonRef} />
+      )}
       <div className="app-body">
         {!tv && <Sidebar {...navProps} />}
         <main className="content">

@@ -1,5 +1,5 @@
 #Create an environment variable with the domain where you want to access your mayhem instance, e.g.:
-docker build -t mayhem .
+# docker build -t mayhem .
 
 set -a; source .env; set +a
 

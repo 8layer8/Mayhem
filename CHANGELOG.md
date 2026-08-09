@@ -1,3 +1,7 @@
+## v0.1.5 - 2026-08-09
+
+- fix fir samsung tv browser
+
 ## v0.1.4 - 2026-08-09
 
 

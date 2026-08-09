@@ -1,3 +1,9 @@
+## v0.1.9 - 2026-08-09
+
+- Merge branch 'main' of github.com:8layer8/Mayhem
+- try to debug on tv
+- chore: release v0.1.8
+
 ## v0.1.8 - 2026-08-09
 
 

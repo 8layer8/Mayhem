@@ -1,14 +1,20 @@
+import { isTvBrowser } from "../util/tv";
+
 /**
  * Lazily-created Web Audio graph shared by the audio engine and the visualizer.
  * Each <audio> element is routed: source → analyser → destination. Because the
  * stream is same-origin (served by our proxy), the analyser is not CORS-tainted
  * and can read frequency data for the visualizer.
+ *
+ * Skipped on TV browsers: createMediaElementSource disconnects native output and
+ * many Smart TV engines (Samsung Tizen, webOS, etc.) have broken Web Audio.
  */
 let ctx: AudioContext | null = null;
 let analyser: AnalyserNode | null = null;
 const sources = new WeakMap<HTMLMediaElement, MediaElementAudioSourceNode>();
 
-export function ensureGraph(el: HTMLMediaElement): AnalyserNode {
+export function ensureGraph(el: HTMLMediaElement): AnalyserNode | null {
+  if (isTvBrowser()) return null;
   if (!ctx) {
     const Ctor =
       window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;

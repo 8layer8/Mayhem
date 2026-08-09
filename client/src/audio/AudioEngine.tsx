@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { streamUrl } from "../api/client";
 import { usePlayer } from "../store/player";
+import { isTvBrowser } from "../util/tv";
 import { ensureGraph } from "./audioGraph";
 
 /**
@@ -107,6 +108,35 @@ export function AudioEngine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seekTo]);
 
+  // TV browsers: play() from React effects often loses the user-gesture context.
+  // Retry on the bubbling click/keydown that triggered the state change.
+  useEffect(() => {
+    if (!isTvBrowser()) return;
+    const retryPlay = () => {
+      const el = active();
+      if (!el || !usePlayer.getState().isPlaying || !el.paused) return;
+      void el.play().catch(() => undefined);
+    };
+    document.addEventListener("click", retryPlay);
+    document.addEventListener("keydown", retryPlay);
+    return () => {
+      document.removeEventListener("click", retryPlay);
+      document.removeEventListener("keydown", retryPlay);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // TV browsers: timeupdate is unreliable; poll while playing.
+  useEffect(() => {
+    if (!isTvBrowser() || !isPlaying || !current) return;
+    const id = window.setInterval(() => {
+      const el = active();
+      if (el && !el.paused) setProgress(el.currentTime, el.duration || 0);
+    }, 500);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, current?.ratingKey]);
+
   // Preload the next track after the current one can play (avoids competing downloads).
   useEffect(() => {
     const el = active();
@@ -130,11 +160,13 @@ export function AudioEngine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextTrack?.ratingKey, current?.ratingKey]);
 
-  const onTimeUpdate = (idx: number) => () => {
+  const syncProgress = (idx: number) => {
     if (idx !== activeIdx.current) return;
     const el = refs[idx].current;
     if (el) setProgress(el.currentTime, el.duration || 0);
   };
+  const onTimeUpdate = (idx: number) => () => syncProgress(idx);
+  const onLoadedMetadata = (idx: number) => () => syncProgress(idx);
   const onEnded = (idx: number) => () => {
     if (idx !== activeIdx.current) return;
     handleEnded();
@@ -149,6 +181,7 @@ export function AudioEngine() {
           preload="auto"
           playsInline
           onTimeUpdate={onTimeUpdate(idx)}
+          onLoadedMetadata={onLoadedMetadata(idx)}
           onEnded={onEnded(idx)}
           onError={onStreamError(idx)}
         />

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Track } from "../api/plex";
 import { playFromGesture } from "../audio/playbackBridge";
+import { trackDurationSec } from "../audio/progress";
 
 export type RepeatMode = "off" | "all" | "one";
 
@@ -77,30 +78,32 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks: (tracks, startIndex = 0, sourcePlaylistId = null) => {
     if (!tracks.length) return;
     const index = startIndex;
+    const track = tracks[index];
     set({
       queue: tracks,
       index,
       isPlaying: true,
       position: 0,
+      duration: trackDurationSec(track),
       sourcePlaylistId: sourcePlaylistId ?? null,
     });
-    playFromGesture(tracks[index]?.ratingKey ?? null, true);
   },
   addToQueue: (tracks) =>
     set((s) => {
       const queue = [...s.queue, ...tracks];
       const index = s.index < 0 ? 0 : s.index;
       const isPlaying = s.index < 0 ? true : s.isPlaying;
-      if (s.index < 0 && tracks.length) {
-        playFromGesture(tracks[0]?.ratingKey ?? null, true);
-      }
       return { queue, index, isPlaying };
     }),
   playAt: (index) => {
     const { queue } = get();
     if (index < 0 || index >= queue.length) return;
-    set({ index, isPlaying: true, position: 0 });
-    playFromGesture(queue[index]?.ratingKey ?? null, true);
+    set({
+      index,
+      isPlaying: true,
+      position: 0,
+      duration: trackDurationSec(queue[index]),
+    });
   },
   removeAt: (index) =>
     set((s) => {
@@ -130,37 +133,41 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set((s) => {
       if (s.index < 0) return {};
       const isPlaying = !s.isPlaying;
-      playFromGesture(s.queue[s.index]?.ratingKey ?? null, isPlaying);
+      if (!isPlaying) playFromGesture(null, false);
       return { isPlaying };
     }),
   setPlaying: (playing) => {
-    const { queue, index } = get();
     set({ isPlaying: playing });
-    if (index >= 0) playFromGesture(queue[index]?.ratingKey ?? null, playing);
+    if (!playing) playFromGesture(null, false);
   },
   next: () => {
     const { queue, index, repeat } = get();
     if (index + 1 < queue.length) {
       const nextIndex = index + 1;
-      set({ index: nextIndex, position: 0, isPlaying: true });
-      playFromGesture(queue[nextIndex]?.ratingKey ?? null, true);
+      set({
+        index: nextIndex,
+        position: 0,
+        duration: trackDurationSec(queue[nextIndex]),
+        isPlaying: true,
+      });
     } else if (repeat === "all" && queue.length) {
-      set({ index: 0, position: 0, isPlaying: true });
-      playFromGesture(queue[0]?.ratingKey ?? null, true);
+      set({ index: 0, position: 0, duration: trackDurationSec(queue[0]), isPlaying: true });
     }
   },
   previous: () => {
     const { queue, index, position } = get();
     if (position > 3) {
-      set({ seekTo: 0 });
-      playFromGesture(queue[index]?.ratingKey ?? null, true);
+      set({ seekTo: 0, position: 0 });
     } else if (index > 0) {
       const prevIndex = index - 1;
-      set({ index: prevIndex, position: 0, isPlaying: true });
-      playFromGesture(queue[prevIndex]?.ratingKey ?? null, true);
+      set({
+        index: prevIndex,
+        position: 0,
+        duration: trackDurationSec(queue[prevIndex]),
+        isPlaying: true,
+      });
     } else {
-      set({ seekTo: 0 });
-      playFromGesture(queue[index]?.ratingKey ?? null, true);
+      set({ seekTo: 0, position: 0 });
     }
   },
   setVolume: (v) => set({ volume: Math.max(0, Math.min(1, v)) }),
@@ -187,17 +194,22 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       return { shuffle: false };
     }),
 
-  setProgress: (position, duration) => set({ position, duration }),
+  setProgress: (position, duration) =>
+    set((s) => ({
+      position,
+      duration: duration > 0 ? duration : s.duration,
+    })),
   handleEnded: () => {
     const { queue, index, repeat } = get();
     if (repeat === "one") {
-      set({ position: 0, isPlaying: true });
+      set({ position: 0, isPlaying: true, seekTo: 0 });
       return;
     }
     if (index + 1 < queue.length) {
-      set({ index: index + 1, position: 0, isPlaying: true });
+      const next = queue[index + 1];
+      set({ index: index + 1, position: 0, duration: trackDurationSec(next), isPlaying: true });
     } else if (repeat === "all" && queue.length) {
-      set({ index: 0, position: 0, isPlaying: true });
+      set({ index: 0, position: 0, duration: trackDurationSec(queue[0]), isPlaying: true });
     } else {
       set({ isPlaying: false, position: 0 });
     }

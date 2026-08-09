@@ -168,7 +168,7 @@ async function transcodeProxy(
   const target = new URL(`${baseUrl}/music/:/transcode/universal/start.mp3`);
   target.searchParams.set("path", `/library/metadata/${ratingKey}`);
   target.searchParams.set("protocol", "http");
-  target.searchParams.set("musicBitrate", "320");
+  target.searchParams.set("musicBitrate", "192");
   target.searchParams.set("session", `${PLEX_CLIENT_IDENTIFIER}-${ratingKey}`);
   target.searchParams.set("X-Plex-Token", token);
 

@@ -1,13 +1,10 @@
+import { isTeslaBrowser, isTvBrowser } from "./tv";
+
 const PENDING_PIN_KEY = "mayhem-pending-pin";
 
 /** Browsers that navigate away on window.open with no reliable way back. */
 export function prefersSameTabAuth(): boolean {
-  const ua = navigator.userAgent;
-  if (/Tesla/i.test(ua)) return true;
-  // Common embedded / TV browsers with poor popup support.
-  if (/Web0S|SmartTV|NetCast|Tizen|HbbTV|CrKey|Android TV|GoogleTV|Google TV|AFT[A-Z]|MayhemAndroidTV/i.test(ua)) {
-    return true;
-  }
+  if (isTeslaBrowser() || isTvBrowser()) return true;
   return false;
 }
 

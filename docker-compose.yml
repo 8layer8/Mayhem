@@ -1,6 +1,6 @@
 services:
   mayhem:
-    container_name: mindcrime30/mayhem:latest
+    image: mindcrime30/mayhem:latest
 #    ports:
 #      - "${PORT:-8080}:8080"
     environment:

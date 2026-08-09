@@ -26,7 +26,7 @@ export function TvNav({
   username?: string | null;
   userThumb?: string | null;
   serverName?: string | null;
-  userButtonRef?: RefObject<HTMLButtonElement | null>;
+  userButtonRef?: RefObject<HTMLButtonElement>;
   onSwitchOpen?: () => void;
 }) {
   const queryClient = useQueryClient();

@@ -1,3 +1,8 @@
+## v0.1.3 - 2026-08-09
+
+- docker start should pull not build
+- v0.1.2 css fixes and cleanup
+
 ## v0.1.2 - 2026-08-09
 
 

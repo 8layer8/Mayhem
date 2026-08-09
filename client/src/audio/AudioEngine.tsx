@@ -3,18 +3,27 @@ import { streamUrl } from "../api/client";
 import { usePlayer } from "../store/player";
 import { isTvBrowser } from "../util/tv";
 import { ensureGraph } from "./audioGraph";
+import { registerPlaybackBridge } from "./playbackBridge";
+
+const tv = isTvBrowser();
 
 /**
- * Headless component that owns playback. Uses two <audio> elements so the next
+ * Headless component that owns playback. Uses two media elements so the next
  * track can be preloaded into the idle element for best-effort gapless
  * transitions: when the current track changes to one already preloaded, we swap
  * to that element instead of reloading.
+ *
+ * TV browsers use <video> (not <audio>) — many Smart TV engines only decode
+ * through the video pipeline. TV also forces MP3 transcode for codec support.
  */
 export function AudioEngine() {
-  const refs = [useRef<HTMLAudioElement>(null), useRef<HTMLAudioElement>(null)];
+  const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)];
+  const audioRefs = [useRef<HTMLAudioElement>(null), useRef<HTMLAudioElement>(null)];
+  const refs = () => (tv ? videoRefs : audioRefs);
   const activeIdx = useRef(0);
   const loadedKey = useRef<[string | null, string | null]>([null, null]);
   const transcodeFallback = useRef<[boolean, boolean]>([false, false]);
+  const volumeRef = useRef(1);
 
   const queue = usePlayer((s) => s.queue);
   const index = usePlayer((s) => s.index);
@@ -25,6 +34,9 @@ export function AudioEngine() {
   const setProgress = usePlayer((s) => s.setProgress);
   const handleEnded = usePlayer((s) => s.handleEnded);
   const clearSeek = usePlayer((s) => s.clearSeek);
+  const setPlaybackHint = usePlayer((s) => s.setPlaybackHint);
+
+  volumeRef.current = volume;
 
   const current = index >= 0 ? queue[index] : undefined;
   const nextTrack =
@@ -36,33 +48,62 @@ export function AudioEngine() {
           ? queue[0]
           : undefined;
 
-  const active = () => refs[activeIdx.current].current;
-  const idle = () => refs[activeIdx.current === 0 ? 1 : 0].current;
+  const active = () => refs()[activeIdx.current].current;
+  const idle = () => refs()[activeIdx.current === 0 ? 1 : 0].current;
 
-  const loadTrack = (el: HTMLAudioElement, idx: number, ratingKey: string, transcode = false) => {
+  const defaultTranscode = () => tv;
+
+  const loadTrack = (el: HTMLMediaElement, idx: number, ratingKey: string, transcode = defaultTranscode()) => {
     loadedKey.current[idx] = ratingKey;
     transcodeFallback.current[idx] = transcode;
-    el.src = streamUrl(ratingKey, transcode);
+    const url = streamUrl(ratingKey, transcode);
+    // Some TV engines reject relative media URLs.
+    el.src = tv ? new URL(url, window.location.origin).href : url;
     el.load();
   };
 
+  const startPlayback = (el: HTMLMediaElement) => {
+    ensureGraph(el);
+    el.volume = volumeRef.current;
+    void el.play().catch(() => undefined);
+  };
+
+  const playFromGesture = (ratingKey: string | null, playing: boolean) => {
+    const el = active();
+    if (!el) return;
+    if (ratingKey && loadedKey.current[activeIdx.current] !== ratingKey) {
+      loadTrack(el, activeIdx.current, ratingKey);
+    }
+    if (playing) startPlayback(el);
+    else el.pause();
+  };
+
+  useEffect(() => {
+    registerPlaybackBridge({ playFromGesture });
+    return () => registerPlaybackBridge(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onStreamError = (idx: number) => () => {
-    const el = refs[idx].current;
+    const el = refs()[idx].current;
     const ratingKey = loadedKey.current[idx];
-    if (!el || !ratingKey || transcodeFallback.current[idx]) return;
+    if (!el || !ratingKey) return;
+    const code = el.error?.code;
+    const reasons = ["", "aborted", "network", "decode", "format not supported"];
+    setPlaybackHint(`Playback error: ${reasons[code ?? 0] ?? `code ${code}`}`);
+    if (transcodeFallback.current[idx]) return;
     loadTrack(el, idx, ratingKey, true);
-    if (idx === activeIdx.current && isPlaying) void el.play().catch(() => undefined);
+    if (idx === activeIdx.current && usePlayer.getState().isPlaying) startPlayback(el);
   };
 
   // Load + play the current track (swapping to a preloaded element if possible).
   useEffect(() => {
     if (!current) {
-      refs.forEach((r) => r.current?.pause());
+      refs().forEach((r) => r.current?.pause());
       return;
     }
     const idleIdx = activeIdx.current === 0 ? 1 : 0;
     if (loadedKey.current[idleIdx] === current.ratingKey) {
-      // Already preloaded in the idle element — swap to it (near-gapless).
       active()?.pause();
       activeIdx.current = idleIdx;
     } else if (loadedKey.current[activeIdx.current] !== current.ratingKey) {
@@ -70,10 +111,9 @@ export function AudioEngine() {
       if (el) loadTrack(el, activeIdx.current, current.ratingKey);
     }
     const el = active();
-    if (el) {
-      ensureGraph(el);
-      el.volume = volume;
-      if (isPlaying) void el.play().catch(() => undefined);
+    if (el && isPlaying) {
+      setPlaybackHint(null);
+      startPlayback(el);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.ratingKey]);
@@ -82,18 +122,14 @@ export function AudioEngine() {
   useEffect(() => {
     const el = active();
     if (!el || !current) return;
-    if (isPlaying) {
-      ensureGraph(el);
-      void el.play().catch(() => undefined);
-    } else {
-      el.pause();
-    }
+    if (isPlaying) startPlayback(el);
+    else el.pause();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   // Volume.
   useEffect(() => {
-    refs.forEach((r) => {
+    refs().forEach((r) => {
       if (r.current) r.current.volume = volume;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,30 +144,28 @@ export function AudioEngine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seekTo]);
 
-  // TV browsers: play() from React effects often loses the user-gesture context.
-  // Retry on the bubbling click/keydown that triggered the state change.
+  // Start once enough data is buffered (gesture play() often runs before canplay).
   useEffect(() => {
-    if (!isTvBrowser()) return;
-    const retryPlay = () => {
-      const el = active();
-      if (!el || !usePlayer.getState().isPlaying || !el.paused) return;
-      void el.play().catch(() => undefined);
+    const el = active();
+    if (!el || !isPlaying || !current) return;
+    const tryPlay = () => {
+      if (usePlayer.getState().isPlaying && el.paused) startPlayback(el);
     };
-    document.addEventListener("click", retryPlay);
-    document.addEventListener("keydown", retryPlay);
-    return () => {
-      document.removeEventListener("click", retryPlay);
-      document.removeEventListener("keydown", retryPlay);
-    };
+    el.addEventListener("canplay", tryPlay);
+    if (el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) tryPlay();
+    return () => el.removeEventListener("canplay", tryPlay);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isPlaying, current?.ratingKey]);
 
   // TV browsers: timeupdate is unreliable; poll while playing.
   useEffect(() => {
-    if (!isTvBrowser() || !isPlaying || !current) return;
+    if (!tv || !isPlaying || !current) return;
     const id = window.setInterval(() => {
       const el = active();
-      if (el && !el.paused) setProgress(el.currentTime, el.duration || 0);
+      if (!el) return;
+      if (!el.paused || el.currentTime > 0) {
+        setProgress(el.currentTime, el.duration || 0);
+      }
     }, 500);
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,7 +196,7 @@ export function AudioEngine() {
 
   const syncProgress = (idx: number) => {
     if (idx !== activeIdx.current) return;
-    const el = refs[idx].current;
+    const el = refs()[idx].current;
     if (el) setProgress(el.currentTime, el.duration || 0);
   };
   const onTimeUpdate = (idx: number) => () => syncProgress(idx);
@@ -172,20 +206,21 @@ export function AudioEngine() {
     handleEnded();
   };
 
+  const mediaProps = (idx: number) => ({
+    className: "mayhem-media",
+    preload: "auto" as const,
+    playsInline: true,
+    onTimeUpdate: onTimeUpdate(idx),
+    onLoadedMetadata: onLoadedMetadata(idx),
+    onEnded: onEnded(idx),
+    onError: onStreamError(idx),
+  });
+
   return (
     <>
-      {refs.map((ref, idx) => (
-        <audio
-          key={idx}
-          ref={ref}
-          preload="auto"
-          playsInline
-          onTimeUpdate={onTimeUpdate(idx)}
-          onLoadedMetadata={onLoadedMetadata(idx)}
-          onEnded={onEnded(idx)}
-          onError={onStreamError(idx)}
-        />
-      ))}
+      {tv
+        ? videoRefs.map((ref, idx) => <video key={idx} ref={ref} {...mediaProps(idx)} />)
+        : audioRefs.map((ref, idx) => <audio key={idx} ref={ref} {...mediaProps(idx)} />)}
     </>
   );
 }

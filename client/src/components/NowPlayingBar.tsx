@@ -1,4 +1,5 @@
 import { usePlayer } from "../store/player";
+import { isTvBrowser } from "../util/tv";
 import { AddToPlaylist } from "./AddToPlaylist";
 import { Artwork } from "./Artwork";
 import { GlyphQueue } from "./Glyphs";
@@ -23,6 +24,8 @@ export function NowPlayingBar({ onToggleQueue, onToggleNowPlaying }: NowPlayingB
   const cycleRepeat = usePlayer((s) => s.cycleRepeat);
   const shuffle = usePlayer((s) => s.shuffle);
   const toggleShuffle = usePlayer((s) => s.toggleShuffle);
+  const playbackHint = usePlayer((s) => s.playbackHint);
+  const tv = isTvBrowser();
 
   return (
     <footer className="now-playing-bar">
@@ -39,6 +42,7 @@ export function NowPlayingBar({ onToggleQueue, onToggleNowPlaying }: NowPlayingB
         <div className="np-text">
           <div className="np-title">{current?.title ?? "Nothing playing"}</div>
           <div className="np-artist muted">{current?.artist ?? ""}</div>
+          {tv && playbackHint && <div className="np-playback-hint">{playbackHint}</div>}
         </div>
         {current && (
           <div className="np-track-actions" onClick={(e) => e.stopPropagation()}>

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { Track } from "../api/plex";
+import { playFromGesture } from "../audio/playbackBridge";
 
 export type RepeatMode = "off" | "all" | "one";
 
@@ -16,6 +17,8 @@ interface PlayerState {
   sourcePlaylistId: string | null;
   /** Pending seek target (seconds) for the audio engine to consume, or null. */
   seekTo: number | null;
+  /** Last playback error hint (shown on TV for debugging). */
+  playbackHint: string | null;
 
   current: () => Track | undefined;
   nextTrack: () => Track | undefined;
@@ -38,6 +41,7 @@ interface PlayerState {
   /** Request a seek; the audio engine applies it and clears `seekTo`. */
   seek: (seconds: number) => void;
   clearSeek: () => void;
+  setPlaybackHint: (hint: string | null) => void;
 
   // updated by the audio engine
   setProgress: (position: number, duration: number) => void;
@@ -56,6 +60,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   sourcePlaylistId: null,
   seekTo: null,
+  playbackHint: null,
 
   current: () => {
     const { queue, index } = get();
@@ -71,26 +76,31 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   playTracks: (tracks, startIndex = 0, sourcePlaylistId = null) => {
     if (!tracks.length) return;
+    const index = startIndex;
     set({
       queue: tracks,
-      index: startIndex,
+      index,
       isPlaying: true,
       position: 0,
       sourcePlaylistId: sourcePlaylistId ?? null,
     });
+    playFromGesture(tracks[index]?.ratingKey ?? null, true);
   },
   addToQueue: (tracks) =>
     set((s) => {
       const queue = [...s.queue, ...tracks];
-      // if nothing was playing, start at the first added track
       const index = s.index < 0 ? 0 : s.index;
       const isPlaying = s.index < 0 ? true : s.isPlaying;
+      if (s.index < 0 && tracks.length) {
+        playFromGesture(tracks[0]?.ratingKey ?? null, true);
+      }
       return { queue, index, isPlaying };
     }),
   playAt: (index) => {
     const { queue } = get();
     if (index < 0 || index >= queue.length) return;
     set({ index, isPlaying: true, position: 0 });
+    playFromGesture(queue[index]?.ratingKey ?? null, true);
   },
   removeAt: (index) =>
     set((s) => {
@@ -116,22 +126,41 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   clearQueue: () =>
     set({ queue: [], index: -1, isPlaying: false, position: 0, sourcePlaylistId: null }),
 
-  togglePlay: () => set((s) => (s.index >= 0 ? { isPlaying: !s.isPlaying } : {})),
-  setPlaying: (playing) => set({ isPlaying: playing }),
+  togglePlay: () =>
+    set((s) => {
+      if (s.index < 0) return {};
+      const isPlaying = !s.isPlaying;
+      playFromGesture(s.queue[s.index]?.ratingKey ?? null, isPlaying);
+      return { isPlaying };
+    }),
+  setPlaying: (playing) => {
+    const { queue, index } = get();
+    set({ isPlaying: playing });
+    if (index >= 0) playFromGesture(queue[index]?.ratingKey ?? null, playing);
+  },
   next: () => {
     const { queue, index, repeat } = get();
-    if (index + 1 < queue.length) set({ index: index + 1, position: 0, isPlaying: true });
-    else if (repeat === "all" && queue.length) set({ index: 0, position: 0, isPlaying: true });
+    if (index + 1 < queue.length) {
+      const nextIndex = index + 1;
+      set({ index: nextIndex, position: 0, isPlaying: true });
+      playFromGesture(queue[nextIndex]?.ratingKey ?? null, true);
+    } else if (repeat === "all" && queue.length) {
+      set({ index: 0, position: 0, isPlaying: true });
+      playFromGesture(queue[0]?.ratingKey ?? null, true);
+    }
   },
   previous: () => {
-    const { index, position } = get();
-    // restart current track if more than 3s in, else go to previous
+    const { queue, index, position } = get();
     if (position > 3) {
       set({ seekTo: 0 });
+      playFromGesture(queue[index]?.ratingKey ?? null, true);
     } else if (index > 0) {
-      set({ index: index - 1, position: 0, isPlaying: true });
+      const prevIndex = index - 1;
+      set({ index: prevIndex, position: 0, isPlaying: true });
+      playFromGesture(queue[prevIndex]?.ratingKey ?? null, true);
     } else {
       set({ seekTo: 0 });
+      playFromGesture(queue[index]?.ratingKey ?? null, true);
     }
   },
   setVolume: (v) => set({ volume: Math.max(0, Math.min(1, v)) }),
@@ -141,6 +170,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     })),
   seek: (seconds) => set({ seekTo: Math.max(0, seconds) }),
   clearSeek: () => set({ seekTo: null }),
+  setPlaybackHint: (hint) => set({ playbackHint: hint }),
   toggleShuffle: () =>
     set((s) => {
       if (s.queue.length <= 1) return { shuffle: !s.shuffle };

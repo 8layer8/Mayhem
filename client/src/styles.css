@@ -1525,3 +1525,23 @@ html[data-tv="true"] .server-item:focus-visible {
   outline-offset: 2px;
 }
 
+/* Hidden media element — TV engines need a real <video> node in the DOM. */
+.mayhem-media {
+  position: fixed;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-tv="true"] .mayhem-media {
+  width: 1px;
+  height: 1px;
+}
+
+.np-playback-hint {
+  color: #f87171;
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+

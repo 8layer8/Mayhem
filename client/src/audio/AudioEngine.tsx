@@ -4,8 +4,10 @@ import { usePlayer } from "../store/player";
 import { isTvBrowser } from "../util/tv";
 import { ensureGraph } from "./audioGraph";
 import { registerPlaybackBridge } from "./playbackBridge";
+import { tvStreamSrc } from "./tvStream";
 
-const tv = isTvBrowser();
+const READY = ["nothing", "metadata", "data", "future", "enough"];
+const NETWORK = ["empty", "idle", "loading", "no source"];
 
 /**
  * Headless component that owns playback. Uses two media elements so the next
@@ -13,17 +15,18 @@ const tv = isTvBrowser();
  * transitions: when the current track changes to one already preloaded, we swap
  * to that element instead of reloading.
  *
- * TV browsers use <video> (not <audio>) — many Smart TV engines only decode
- * through the video pipeline. TV also forces MP3 transcode for codec support.
+ * TV browsers use <video> with cookie-less stream grants — many Smart TV engines
+ * omit session cookies on media src requests and only decode through video.
  */
 export function AudioEngine() {
   const videoRefs = [useRef<HTMLVideoElement>(null), useRef<HTMLVideoElement>(null)];
   const audioRefs = [useRef<HTMLAudioElement>(null), useRef<HTMLAudioElement>(null)];
-  const refs = () => (tv ? videoRefs : audioRefs);
+  const refs = () => (isTvBrowser() ? videoRefs : audioRefs);
   const activeIdx = useRef(0);
   const loadedKey = useRef<[string | null, string | null]>([null, null]);
   const transcodeFallback = useRef<[boolean, boolean]>([false, false]);
   const volumeRef = useRef(1);
+  const loadGen = useRef(0);
 
   const queue = usePlayer((s) => s.queue);
   const index = usePlayer((s) => s.index);
@@ -51,31 +54,55 @@ export function AudioEngine() {
   const active = () => refs()[activeIdx.current].current;
   const idle = () => refs()[activeIdx.current === 0 ? 1 : 0].current;
 
-  const defaultTranscode = () => tv;
+  const defaultTranscode = () => isTvBrowser();
 
-  const loadTrack = (el: HTMLMediaElement, idx: number, ratingKey: string, transcode = defaultTranscode()) => {
+  const loadTrack = async (
+    el: HTMLMediaElement,
+    idx: number,
+    ratingKey: string,
+    transcode = defaultTranscode(),
+  ): Promise<void> => {
+    const gen = ++loadGen.current;
     loadedKey.current[idx] = ratingKey;
     transcodeFallback.current[idx] = transcode;
-    const url = streamUrl(ratingKey, transcode);
-    // Some TV engines reject relative media URLs.
-    el.src = tv ? new URL(url, window.location.origin).href : url;
-    el.load();
+
+    try {
+      if (isTvBrowser()) {
+        setPlaybackHint("Loading stream…");
+        el.src = await tvStreamSrc(ratingKey, transcode);
+      } else {
+        el.src = streamUrl(ratingKey, transcode);
+      }
+      if (gen !== loadGen.current) return;
+      el.load();
+      setPlaybackHint(null);
+    } catch (err) {
+      if (gen !== loadGen.current) return;
+      const msg = err instanceof Error ? err.message : "stream load failed";
+      setPlaybackHint(`Stream error: ${msg}`);
+    }
   };
 
   const startPlayback = (el: HTMLMediaElement) => {
     ensureGraph(el);
     el.volume = volumeRef.current;
-    void el.play().catch(() => undefined);
+    void el.play().catch((err: unknown) => {
+      if (!isTvBrowser()) return;
+      const msg = err instanceof Error ? err.message : "play() rejected";
+      setPlaybackHint(`Play blocked: ${msg}`);
+    });
   };
 
   const playFromGesture = (ratingKey: string | null, playing: boolean) => {
-    const el = active();
-    if (!el) return;
-    if (ratingKey && loadedKey.current[activeIdx.current] !== ratingKey) {
-      loadTrack(el, activeIdx.current, ratingKey);
-    }
-    if (playing) startPlayback(el);
-    else el.pause();
+    void (async () => {
+      const el = active();
+      if (!el) return;
+      if (ratingKey && loadedKey.current[activeIdx.current] !== ratingKey) {
+        await loadTrack(el, activeIdx.current, ratingKey);
+      }
+      if (playing) startPlayback(el);
+      else el.pause();
+    })();
   };
 
   useEffect(() => {
@@ -92,8 +119,9 @@ export function AudioEngine() {
     const reasons = ["", "aborted", "network", "decode", "format not supported"];
     setPlaybackHint(`Playback error: ${reasons[code ?? 0] ?? `code ${code}`}`);
     if (transcodeFallback.current[idx]) return;
-    loadTrack(el, idx, ratingKey, true);
-    if (idx === activeIdx.current && usePlayer.getState().isPlaying) startPlayback(el);
+    void loadTrack(el, idx, ratingKey, true).then(() => {
+      if (idx === activeIdx.current && usePlayer.getState().isPlaying) startPlayback(el);
+    });
   };
 
   // Load + play the current track (swapping to a preloaded element if possible).
@@ -108,13 +136,10 @@ export function AudioEngine() {
       activeIdx.current = idleIdx;
     } else if (loadedKey.current[activeIdx.current] !== current.ratingKey) {
       const el = active();
-      if (el) loadTrack(el, activeIdx.current, current.ratingKey);
+      if (el) void loadTrack(el, activeIdx.current, current.ratingKey);
     }
     const el = active();
-    if (el && isPlaying) {
-      setPlaybackHint(null);
-      startPlayback(el);
-    }
+    if (el && isPlaying) startPlayback(el);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.ratingKey]);
 
@@ -157,14 +182,24 @@ export function AudioEngine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, current?.ratingKey]);
 
-  // TV browsers: timeupdate is unreliable; poll while playing.
+  // TV: poll progress and surface stuck-state diagnostics.
   useEffect(() => {
-    if (!tv || !isPlaying || !current) return;
+    if (!isTvBrowser() || !current) return;
+    let ticks = 0;
     const id = window.setInterval(() => {
       const el = active();
       if (!el) return;
+      ticks += 1;
+
       if (!el.paused || el.currentTime > 0) {
         setProgress(el.currentTime, el.duration || 0);
+        return;
+      }
+
+      if (usePlayer.getState().isPlaying && ticks >= 4) {
+        setPlaybackHint(
+          `Stuck: ready=${READY[el.readyState] ?? el.readyState} net=${NETWORK[el.networkState] ?? el.networkState}`,
+        );
       }
     }, 500);
     return () => window.clearInterval(id);
@@ -180,7 +215,7 @@ export function AudioEngine() {
     const preload = () => {
       const idleEl = idle();
       if (idleEl && loadedKey.current[idleIdx] !== nextTrack.ratingKey) {
-        loadTrack(idleEl, idleIdx, nextTrack.ratingKey);
+        void loadTrack(idleEl, idleIdx, nextTrack.ratingKey);
       }
     };
 
@@ -218,7 +253,7 @@ export function AudioEngine() {
 
   return (
     <>
-      {tv
+      {isTvBrowser()
         ? videoRefs.map((ref, idx) => <video key={idx} ref={ref} {...mediaProps(idx)} />)
         : audioRefs.map((ref, idx) => <audio key={idx} ref={ref} {...mediaProps(idx)} />)}
     </>

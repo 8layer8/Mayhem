@@ -2,12 +2,12 @@ import { Router, type Request, type Response } from "express";
 import { fetch } from "undici";
 import { PLEX_CLIENT_IDENTIFIER } from "../config.js";
 import { plexHeaders } from "../plex/headers.js";
-import { currentServer, requireServer } from "./requireServer.js";
+import { createStreamGrant } from "../streamGrant.js";
+import { requireServer, currentServer } from "./requireServer.js";
+import { requireStreamAccess, streamServer } from "./streamAuth.js";
 import { abortOnClose, isDisconnect, pipeUpstreamBody } from "./streamUtils.js";
 
 export const streamRouter = Router();
-
-streamRouter.use(requireServer);
 
 /** Audio codecs browsers can generally play directly (so we can avoid transcoding). */
 const DIRECT_PLAY_CODECS = new Set([
@@ -73,7 +73,7 @@ async function resolvePart(
 }
 
 /** Source file format + bitrate for display (does not stream audio). */
-streamRouter.get("/:ratingKey/info", async (req, res) => {
+streamRouter.get("/:ratingKey/info", requireServer, async (req, res) => {
   const server = currentServer(res);
   const part = await resolvePart(server.baseUrl, server.accessToken, req.params.ratingKey);
   if (!part) {
@@ -86,15 +86,23 @@ streamRouter.get("/:ratingKey/info", async (req, res) => {
   });
 });
 
+/** Short-lived stream token for clients whose media elements omit session cookies (TV). */
+streamRouter.get("/:ratingKey/grant", requireServer, async (req, res) => {
+  const server = currentServer(res);
+  const st = await createStreamGrant(server, req.params.ratingKey);
+  res.json({ st });
+});
+
 /**
  * Stream a track. Direct-plays the original file (with HTTP Range support so
  * the <audio> element can seek) when the codec is browser-safe; otherwise falls
  * back to an on-the-fly MP3 transcode for universal playback.
  *
  * Query: ?transcode=1 forces transcoding regardless of codec.
+ * Query: ?st=<grant> authenticates without a session cookie (TV browsers).
  */
-streamRouter.get("/:ratingKey", async (req, res) => {
-  const server = currentServer(res);
+streamRouter.get("/:ratingKey", requireStreamAccess, async (req, res) => {
+  const server = streamServer(res);
   const { ratingKey } = req.params;
 
   const part = await resolvePart(server.baseUrl, server.accessToken, ratingKey);

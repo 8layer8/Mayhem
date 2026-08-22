@@ -87,6 +87,8 @@ body,
 #root {
   margin: 0;
   height: 100%;
+  height: 100svh;
+  max-height: 100svh;
   background: var(--bg);
   color: var(--text);
 }
@@ -245,6 +247,9 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   height: 100%;
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
 }
 .app-body {
   flex: 1;
@@ -824,6 +829,7 @@ input[type="range"]::-moz-range-thumb {
 /* --- Now playing bar --- */
 .now-playing-bar {
   height: var(--bar-height);
+  flex-shrink: 0;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
   display: grid;
@@ -1087,6 +1093,8 @@ input[type="range"]::-moz-range-thumb {
 .now-playing-screen {
   position: fixed;
   inset: 0;
+  height: 100svh;
+  max-height: 100svh;
   z-index: 50;
   background: radial-gradient(circle at 50% 30%, #1a1a26, var(--bg));
   display: flex;
@@ -1557,5 +1565,78 @@ html[data-tv="true"] .mayhem-media {
   color: #f87171;
   font-size: 0.85rem;
   margin-top: 0.15rem;
+}
+
+/* Tesla in-car browser: ~1920×1080 desktop pixels, browser chrome shrinks visible height. */
+html[data-tesla="true"] {
+  --ui-font: 14px;
+  --touch: 40px;
+  --bar-height: 76px;
+  --icon-size: 1.2rem;
+  --icon-play-size: 1.45rem;
+  --icon-play-dim: 42px;
+  --icon-play-size-big: 1.75rem;
+  --icon-play-dim-big: 50px;
+  --hero-art-size: min(50vw, 260px);
+  --sidebar-width: 200px;
+}
+
+html[data-tesla="true"] .page {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+html[data-tesla="true"] .now-playing-bar {
+  padding: 0 0.75rem;
+  gap: 0.5rem;
+}
+
+html[data-tesla="true"] .artwork.small {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
+
+html[data-tesla="true"] .np-title {
+  font-size: 1rem;
+}
+
+html[data-tesla="true"] .np-artist {
+  font-size: 0.85rem;
+}
+
+html[data-tesla="true"] .np-controls {
+  gap: 0.25rem;
+}
+
+html[data-tesla="true"] .transport {
+  gap: 0.35rem;
+}
+
+html[data-tesla="true"] .volume {
+  width: 72px;
+}
+
+html[data-tesla="true"] .now-playing-screen .np-screen-content {
+  max-height: calc(100svh - 1.5rem);
+  overflow-y: auto;
+  gap: 0.5rem;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+html[data-tesla="true"] .now-playing-screen .np-screen-content h1 {
+  font-size: 1.35rem;
+}
+
+html[data-tesla="true"] .now-playing-screen .np-screen-content p {
+  font-size: 1rem;
+}
+
+html[data-tesla="true"] .transport.big {
+  gap: 0.5rem;
+}
+
+html[data-tesla="true"] .now-playing-screen.full .np-screen-content {
+  justify-content: flex-end;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 

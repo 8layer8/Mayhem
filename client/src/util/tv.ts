@@ -1,5 +1,3 @@
-const UI_SCALE_STEPS = ["small", "medium", "large", "extra-large", "full"] as const;
-
 /** Detect TV browsers and the Mayhem Android TV WebView shell. */
 export function isTvBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -32,26 +30,19 @@ export function initTvMode(): void {
   }
 }
 
-function stepUiScale(scale: string, delta: -1 | 1): string {
-  const index = UI_SCALE_STEPS.indexOf(scale as (typeof UI_SCALE_STEPS)[number]);
-  if (index < 0) return scale;
-  const next = index + delta;
-  if (next < 0 || next >= UI_SCALE_STEPS.length) return scale;
-  return UI_SCALE_STEPS[next];
-}
-
 /**
  * Adjust the server UI_SCALE preset for the current client.
- * TV browsers bump small/medium up; Tesla's Chromium browser renders true CSS pixels
- * and needs one step down from large presets.
+ * TV browsers bump small/medium up for distance viewing.
+ * Tesla renders true desktop CSS pixels (~1920×1080) with browser chrome eating height —
+ * always use the smallest preset; `data-tesla` CSS tightens tokens further.
  */
 export function effectiveUiScale(serverScale: string): string {
   if (isTvBrowser()) {
     if (serverScale === "small" || serverScale === "medium") return "extra-large";
     return serverScale;
   }
-  if (isTeslaBrowser() && serverScale !== "small") {
-    return stepUiScale(serverScale, -1);
+  if (isTeslaBrowser()) {
+    return "small";
   }
   return serverScale;
 }

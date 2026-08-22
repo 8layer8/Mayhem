@@ -1,3 +1,7 @@
+## v0.1.25 - 2026-08-22
+
+- update for oversize tesla ui
+
 ## v0.1.24 - 2026-08-22
 
 

@@ -1,3 +1,7 @@
+## v0.1.24 - 2026-08-22
+
+
+
 ## v0.1.23 - 2026-08-22
 
 - tv nav works, browser nav is fixed

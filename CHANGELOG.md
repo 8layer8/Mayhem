@@ -1,3 +1,8 @@
+## v0.1.29 - 2026-08-25
+
+- Merge branch 'main' of github.com:8layer8/Mayhem
+- chore: release v0.1.27
+
 <<<<<<< HEAD
 ## v0.1.28 - 2026-08-25
 

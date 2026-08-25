@@ -1567,18 +1567,18 @@ html[data-tv="true"] .mayhem-media {
   margin-top: 0.15rem;
 }
 
-/* Tesla in-car browser: ~1920×1080 desktop pixels, browser chrome shrinks visible height. */
-html[data-tesla="true"] {
-  --ui-font: 14px;
-  --touch: 40px;
-  --bar-height: 76px;
-  --icon-size: 1.2rem;
-  --icon-play-size: 1.45rem;
-  --icon-play-dim: 42px;
-  --icon-play-size-big: 1.75rem;
-  --icon-play-dim-big: 50px;
-  --hero-art-size: min(50vw, 260px);
-  --sidebar-width: 200px;
+/* Tesla: height/tokens set by initTeslaViewport() from visualViewport (park vs drive). */
+html[data-tesla="true"],
+html[data-tesla="true"] body,
+html[data-tesla="true"] #root,
+html[data-tesla="true"] .app-shell {
+  height: var(--mayhem-app-height, 100svh);
+  max-height: var(--mayhem-app-height, 100svh);
+}
+
+html[data-tesla="true"] .now-playing-screen {
+  height: var(--mayhem-app-height, 100svh);
+  max-height: var(--mayhem-app-height, 100svh);
 }
 
 html[data-tesla="true"] .page {
@@ -1617,7 +1617,7 @@ html[data-tesla="true"] .volume {
 }
 
 html[data-tesla="true"] .now-playing-screen .np-screen-content {
-  max-height: calc(100svh - 1.5rem);
+  max-height: calc(var(--mayhem-app-height, 100svh) - 1.5rem);
   overflow-y: auto;
   gap: 0.5rem;
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));

@@ -33,8 +33,7 @@ export function initTvMode(): void {
 /**
  * Adjust the server UI_SCALE preset for the current client.
  * TV browsers bump small/medium up for distance viewing.
- * Tesla renders true desktop CSS pixels (~1920×1080) with browser chrome eating height —
- * always use the smallest preset; `data-tesla` CSS tightens tokens further.
+ * Tesla caps at medium — viewport-based tokens come from initTeslaViewport().
  */
 export function effectiveUiScale(serverScale: string): string {
   if (isTvBrowser()) {
@@ -42,7 +41,7 @@ export function effectiveUiScale(serverScale: string): string {
     return serverScale;
   }
   if (isTeslaBrowser()) {
-    return "small";
+    return serverScale === "small" ? "small" : "medium";
   }
   return serverScale;
 }

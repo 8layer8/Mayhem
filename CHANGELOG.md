@@ -1,3 +1,7 @@
+## v0.1.31 - 2026-09-23
+
+- add debug info for full vs driving size differences research
+
 ## v0.1.30 - 2026-09-23
 
 

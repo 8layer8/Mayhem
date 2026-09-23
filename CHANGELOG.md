@@ -1,3 +1,7 @@
+## v0.1.34 - 2026-09-23
+
+
+
 ## v0.1.33 - 2026-09-23
 
 - add scaling options to account for the parked vs. moving browser dimensions

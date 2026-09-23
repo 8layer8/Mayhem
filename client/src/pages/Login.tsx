@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { pollPin, startPin } from "../api/auth";
 import { useUiConfig } from "../context/UiConfig";
 import {
@@ -70,6 +71,11 @@ export function Login() {
         {status === "error" && (
           <p className="error">Something went wrong starting sign-in. Try again.</p>
         )}
+        <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+          <Link to="/tesla-debug" className="muted small" style={{ textDecoration: "underline" }}>
+            Tesla Debug
+          </Link>
+        </div>
       </div>
     </div>
   );

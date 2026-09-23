@@ -23,6 +23,7 @@ import { PlaylistPage } from "./pages/PlaylistPage";
 import { PlaylistsPage } from "./pages/PlaylistsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { ServerSelect } from "./pages/ServerSelect";
+import { TeslaDebugPage } from "./pages/TeslaDebugPage";
 import { isTvBrowser } from "./util/tv";
 
 export function App() {
@@ -31,6 +32,7 @@ export function App() {
       <DocumentTitle />
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/tesla-debug" element={<TeslaDebugPage />} />
         <Route path="*" element={<MainApp />} />
       </Routes>
     </>

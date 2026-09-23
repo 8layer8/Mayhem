@@ -1,7 +1,7 @@
 import { isTeslaBrowser } from "./tv";
 
 /** Read the visible browser panel size (parked fullscreen vs driving split-screen). */
-function visibleViewport(): { width: number; height: number } {
+export function visibleViewport(): { width: number; height: number } {
   const vv = window.visualViewport;
   if (vv) {
     return { width: vv.width, height: vv.height };
@@ -13,7 +13,7 @@ function visibleViewport(): { width: number; height: number } {
  * Map visible height to UI tokens. Tesla's browser panel swings from ~450px (driving
  * split) to ~1000px+ (parked fullscreen); fixed CSS cannot fit both.
  */
-function applyTeslaTokens(width: number, height: number): void {
+export function applyTeslaTokens(width: number, height: number): void {
   const root = document.documentElement;
   const h = Math.round(height);
   const w = Math.round(width);
@@ -46,6 +46,13 @@ function applyTeslaTokens(width: number, height: number): void {
   root.dataset.teslaViewport = height < 580 ? "compact" : height < 820 ? "standard" : "spacious";
 }
 
+export function syncTeslaViewport(): void {
+  const { width, height } = visibleViewport();
+  if (height > 0 && width > 0) {
+    applyTeslaTokens(width, height);
+  }
+}
+
 /**
  * Keep layout sized to the actual browser panel. Tesla reports a much larger layout
  * viewport via svh/vh when driving, which pushes the now-playing bar off-screen.
@@ -54,22 +61,15 @@ export function initTeslaViewport(): void {
   if (!isTeslaBrowser()) return;
 
   let raf = 0;
-  const sync = () => {
-    const { width, height } = visibleViewport();
-    if (height > 0 && width > 0) {
-      applyTeslaTokens(width, height);
-    }
-  };
-
   const schedule = () => {
     if (raf) return;
     raf = requestAnimationFrame(() => {
       raf = 0;
-      sync();
+      syncTeslaViewport();
     });
   };
 
-  sync();
+  syncTeslaViewport();
   window.addEventListener("resize", schedule);
   window.visualViewport?.addEventListener("resize", schedule);
   window.visualViewport?.addEventListener("scroll", schedule);

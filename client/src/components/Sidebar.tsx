@@ -74,6 +74,11 @@ export function Sidebar({
         <button className="btn-secondary full" onClick={() => doLogout.mutate()}>
           Sign out
         </button>
+        <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
+          <NavLink to="/tesla-debug" className="muted small" style={{ textDecoration: "underline" }}>
+            Tesla Debug
+          </NavLink>
+        </div>
       </div>
 
       {switchOpen && <SwitchUserModal onClose={() => setSwitchOpen(false)} />}

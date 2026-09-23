@@ -21,16 +21,33 @@ export function applyTeslaTokens(width: number, height: number): void {
   root.style.setProperty("--mayhem-app-height", `${h}px`);
   root.style.setProperty("--mayhem-app-width", `${w}px`);
 
-  // 420px (driving split) → 1080px (parked fullscreen)
-  const t = Math.max(0, Math.min(1, (height - 420) / (1080 - 420)));
+  // Tesla's browser scales the UI by changing devicePixelRatio (DPR).
+  // - Moving (split-screen): DPR is ~1.53, leading to gigantic buttons and text.
+  // - Parked (fullscreen): DPR is 1.0, leading to microscopic fonts on the 1920x1140 canvas.
+  // We compensate for this by defining target physical pixel sizes and dividing by the DPR.
+  const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+  const physicalHeight = height * dpr;
 
-  const uiFont = Math.round(14 + t * 5);
-  const touch = Math.round(40 + t * 18);
-  const barHeight = Math.round(70 + t * 30);
-  const iconPlayDim = Math.round(40 + t * 20);
-  const iconPlayDimBig = Math.round(48 + t * 24);
-  const heroArt = Math.round(220 + t * 120);
-  const sidebarWidth = Math.round(180 + t * 60);
+  // Interpolate between physical heights: 750px (compact/split) to 1200px (spacious/fullscreen)
+  const t = Math.max(0, Math.min(1, (physicalHeight - 750) / (1200 - 750)));
+
+  // Target physical pixel values (how large they should actually render on screen)
+  const targetUiFont = 17 + t * 7;            // 17px to 24px physical
+  const targetTouch = 50 + t * 22;             // 50px to 72px physical
+  const targetBarHeight = 85 + t * 50;         // 85px to 135px physical
+  const targetIconPlayDim = 44 + t * 28;       // 44px to 72px physical
+  const targetIconPlayDimBig = 52 + t * 44;    // 52px to 96px physical
+  const targetHeroArt = 220 + t * 200;         // 220px to 420px physical
+  const targetSidebarWidth = 180 + t * 100;    // 180px to 280px physical
+
+  // Convert physical target values to CSS pixel values by dividing by the DPR
+  const uiFont = Math.round(targetUiFont / dpr);
+  const touch = Math.round(targetTouch / dpr);
+  const barHeight = Math.round(targetBarHeight / dpr);
+  const iconPlayDim = Math.round(targetIconPlayDim / dpr);
+  const iconPlayDimBig = Math.round(targetIconPlayDimBig / dpr);
+  const heroArt = Math.round(targetHeroArt / dpr);
+  const sidebarWidth = Math.round(targetSidebarWidth / dpr);
 
   root.style.setProperty("--ui-font", `${uiFont}px`);
   root.style.setProperty("--touch", `${touch}px`);
@@ -43,7 +60,7 @@ export function applyTeslaTokens(width: number, height: number): void {
   root.style.setProperty("--hero-art-size", `min(55vw, ${heroArt}px)`);
   root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
 
-  root.dataset.teslaViewport = height < 580 ? "compact" : height < 820 ? "standard" : "spacious";
+  root.dataset.teslaViewport = physicalHeight < 850 ? "compact" : physicalHeight < 1050 ? "standard" : "spacious";
 }
 
 export function syncTeslaViewport(): void {

@@ -1,3 +1,7 @@
+## v0.1.42 - 2026-10-06
+
+
+
 ## v0.1.41 - 2026-10-06
 
 - Merge branch 'main' of github.com:8layer8/Mayhem

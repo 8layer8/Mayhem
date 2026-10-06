@@ -35,13 +35,16 @@ export function applyTeslaTokens(width: number, height: number): void {
   const t = Math.max(0, Math.min(1, (physicalHeight - 750) / (1200 - 750)));
 
   // Target physical pixel values (how large they should actually render on screen)
-  const targetUiFont = 17 + t * 7;            // 17px to 24px physical
-  const targetTouch = 50 + t * 22;             // 50px to 72px physical
-  const targetBarHeight = 85 + t * 50;         // 85px to 135px physical
-  const targetIconPlayDim = 44 + t * 28;       // 44px to 72px physical
-  const targetIconPlayDimBig = 52 + t * 44;    // 52px to 96px physical
-  const targetHeroArt = 220 + t * 200;         // 220px to 420px physical
-  const targetSidebarWidth = 180 + t * 100;    // 180px to 280px physical
+  // We bump compact start sizes slightly so driving buttons/text are highly legible and tap-friendly,
+  // while keeping physical sizes in check.
+  const targetUiFont = 18 + t * 6;            // 18px to 24px physical
+  const targetTouch = 58 + t * 14;             // 58px to 72px physical (gives bigger touch targets when compact!)
+  const targetBarHeight = 90 + t * 45;         // 90px to 135px physical
+  const targetIconPlayDim = 52 + t * 20;       // 52px to 72px physical
+  const targetIconPlayDimBig = 64 + t * 32;    // 64px to 96px physical
+  const targetHeroArt = 200 + t * 220;         // 200px to 420px physical
+  const targetSidebarWidth = 160 + t * 120;    // 160px to 280px physical
+  const targetCardMinWidth = 120 + t * 50;     // 120px to 170px physical (keeps album/artist cards compact when driving!)
 
   // Convert physical target values to CSS pixel values by dividing by the DPR
   const uiFont = Math.round(targetUiFont / dpr);
@@ -51,6 +54,7 @@ export function applyTeslaTokens(width: number, height: number): void {
   const iconPlayDimBig = Math.round(targetIconPlayDimBig / dpr);
   const heroArt = Math.round(targetHeroArt / dpr);
   const sidebarWidth = Math.round(targetSidebarWidth / dpr);
+  const cardMinWidth = Math.round(targetCardMinWidth / dpr);
 
   root.style.setProperty("--ui-font", `${uiFont}px`);
   root.style.setProperty("--touch", `${touch}px`);
@@ -62,6 +66,7 @@ export function applyTeslaTokens(width: number, height: number): void {
   root.style.setProperty("--icon-play-dim-big", `${iconPlayDimBig}px`);
   root.style.setProperty("--hero-art-size", `min(55vw, ${heroArt}px)`);
   root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+  root.style.setProperty("--card-min-width", `${cardMinWidth}px`);
 
   root.dataset.teslaViewport = physicalHeight < 850 ? "compact" : physicalHeight < 1050 ? "standard" : "spacious";
 }

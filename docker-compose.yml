@@ -22,30 +22,7 @@ services:
     volumes:
       - mayhem-data:/data
     restart: unless-stopped
-    networks:
-      - net
-      - traefik-public
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.docker.network=traefik-public
-        - traefik.constraint-label=traefik-public
-        - traefik.http.routers.mayhem-http.rule=Host(`${DOMAIN?Variable not set}`)
-        - traefik.http.routers.mayhem-http.entrypoints=http
-        - traefik.http.routers.mayhem-http.middlewares=https-redirect
-        - traefik.http.routers.mayhem-https.rule=Host(`${DOMAIN?Variable not set}`)
-        - traefik.http.routers.mayhem-https.entrypoints=https
-        - traefik.http.routers.mayhem-https.tls=true
-        - traefik.http.routers.mayhem-https.tls.certresolver=le
-        - traefik.http.services.mayhem.loadbalancer.server.port=8080
-
-networks:
-  net:
-    driver: overlay
-    attachable: true
-  traefik-public:
-    external: true
-
+    
 volumes:
   mayhem-data:
   

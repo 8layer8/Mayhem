@@ -1,3 +1,9 @@
+## v0.1.35 - 2026-10-06
+
+- chore: release v0.2.0
+- still fixing the driving mode
+- add force telsa mode since it doesn't seem to detect tesla browser when  driving
+
 ## v0.2.0 - 2026-10-06
 
 - still fixing the driving mode

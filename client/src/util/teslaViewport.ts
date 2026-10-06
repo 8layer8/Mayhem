@@ -18,6 +18,9 @@ export function applyTeslaTokens(width: number, height: number): void {
   const h = Math.round(height);
   const w = Math.round(width);
 
+  // Safeguard: Ensure the data-tesla attribute is set, enabling any [data-tesla="true"] CSS rules.
+  root.dataset.tesla = "true";
+
   root.style.setProperty("--mayhem-app-height", `${h}px`);
   root.style.setProperty("--mayhem-app-width", `${w}px`);
 

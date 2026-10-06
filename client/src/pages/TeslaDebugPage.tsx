@@ -177,6 +177,24 @@ export function TeslaDebugPage() {
     addLog("Manual Sync Triggered");
   };
 
+  const handleForceTeslaMode = () => {
+    try {
+      const isForced = localStorage.getItem("mayhem-tesla-forced") === "true";
+      if (isForced) {
+        localStorage.removeItem("mayhem-tesla-forced");
+        localStorage.removeItem("mayhem-tesla-detected");
+        addLog("Forced Tesla Mode: DISABLED");
+      } else {
+        localStorage.setItem("mayhem-tesla-forced", "true");
+        addLog("Forced Tesla Mode: ENABLED");
+      }
+      syncTeslaViewport();
+      updateMetrics();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleClearLogs = () => {
     setLogs([]);
     logIdCounter.current = 0;
@@ -325,6 +343,9 @@ export function TeslaDebugPage() {
           <Link to="/" style={backButtonStyle}>
             ◀ Back to App
           </Link>
+          <button onClick={handleForceTeslaMode} style={{ ...buttonStyle, backgroundColor: localStorage.getItem("mayhem-tesla-forced") === "true" ? "#312e81" : "#1e1e28" }}>
+            ⭐ {localStorage.getItem("mayhem-tesla-forced") === "true" ? "Unforce Tesla Mode" : "Force Tesla Mode"}
+          </button>
           <button onClick={handleManualSync} style={buttonStyle}>
             ⟳ Force Sync Viewport
           </button>
@@ -350,6 +371,12 @@ export function TeslaDebugPage() {
                 <td style={labelTdStyle}>Is Tesla Browser?</td>
                 <td style={{ ...valueTdStyle, color: metrics.isTesla ? "#10b981" : "#ef4444", fontWeight: "bold" }}>
                   {metrics.isTesla ? "YES" : "NO"}
+                </td>
+              </tr>
+              <tr>
+                <td style={labelTdStyle}>Forced Tesla Mode?</td>
+                <td style={{ ...valueTdStyle, color: localStorage.getItem("mayhem-tesla-forced") === "true" ? "#10b981" : "#9a9aac", fontWeight: "bold" }}>
+                  {localStorage.getItem("mayhem-tesla-forced") === "true" ? "YES (Persistent)" : "NO"}
                 </td>
               </tr>
               <tr>

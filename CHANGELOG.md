@@ -1,3 +1,7 @@
+## v0.1.44 - 2026-10-06
+
+- trying to fix tesla fullscreen
+
 ## v0.1.43 - 2026-10-06
 
 

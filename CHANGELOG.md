@@ -1,3 +1,8 @@
+## v0.1.41 - 2026-10-06
+
+- Merge branch 'main' of github.com:8layer8/Mayhem
+- change default port to 8888
+
 ## v0.1.40 - 2026-10-06
 
 - chore: release v0.1.39

@@ -1,8 +1,8 @@
 services:
   mayhem:
     image: mindcrime30/mayhem:latest
-#    ports:
-#      - "${PORT:-8080}:8080"
+    ports:
+      - "${PORT:-8888}:8080"
     environment:
       # Required: a long random string used to encrypt the session cookie.
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}

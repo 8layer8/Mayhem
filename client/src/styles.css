@@ -1623,11 +1623,11 @@ html[data-tesla="true"] .now-playing-screen .np-screen-content {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
-html[data-tesla="true"] .now-playing-screen .np-screen-content h1 {
+html[data-tesla="true"] .now-playing-screen:not(.full) .np-screen-content h1 {
   font-size: 1.35rem;
 }
 
-html[data-tesla="true"] .now-playing-screen .np-screen-content p {
+html[data-tesla="true"] .now-playing-screen:not(.full) .np-screen-content p {
   font-size: 1rem;
 }
 
@@ -1638,5 +1638,28 @@ html[data-tesla="true"] .transport.big {
 html[data-tesla="true"] .now-playing-screen.full .np-screen-content {
   justify-content: flex-end;
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+html[data-tesla="true"] .now-playing-screen.full .np-screen-content h1 {
+  font-size: clamp(1.8rem, 6vh, 3rem);
+}
+
+html[data-tesla="true"] .now-playing-screen.full .np-screen-content p {
+  font-size: 1.25rem;
+}
+
+html[data-tesla="true"] .now-playing-screen.full .transport.big {
+  gap: 1.25rem;
+}
+
+html[data-tesla="true"] .now-playing-screen.full .transport.big .icon {
+  font-size: 2.25rem;
+  padding: 0.5rem;
+}
+
+html[data-tesla="true"] .now-playing-screen.full .transport.big .icon.play {
+  font-size: 3.5rem;
+  width: 90px;
+  height: 90px;
 }
 

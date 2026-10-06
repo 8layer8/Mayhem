@@ -14,7 +14,7 @@ export const HERO_ART_PIXELS: Record<UiScale, number> = {
   medium: 600,
   large: 800,
   "extra-large": 1200,
-  full: 1920,
+  full: 1024,
 };
 
 export const getUiConfig = () => api.get<UiConfig>("/api/config");

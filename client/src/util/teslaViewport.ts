@@ -24,6 +24,25 @@ export function applyTeslaTokens(width: number, height: number): void {
   root.style.setProperty("--mayhem-app-height", `${h}px`);
   root.style.setProperty("--mayhem-app-width", `${w}px`);
 
+  // If the user has selected "full" scale, let the stylesheet's native full-scale rules apply.
+  // We remove the inline properties that would override and shrink fonts and buttons.
+  if (root.dataset.uiScale === "full") {
+    root.style.removeProperty("--ui-font");
+    root.style.removeProperty("--touch");
+    root.style.removeProperty("--bar-height");
+    root.style.removeProperty("--icon-size");
+    root.style.removeProperty("--icon-play-size");
+    root.style.removeProperty("--icon-play-dim");
+    root.style.removeProperty("--icon-play-size-big");
+    root.style.removeProperty("--icon-play-dim-big");
+    root.style.removeProperty("--hero-art-size");
+    root.style.removeProperty("--sidebar-width");
+    root.style.removeProperty("--card-min-width");
+    
+    root.dataset.teslaViewport = "spacious";
+    return;
+  }
+
   // Tesla's browser scales the UI by changing devicePixelRatio (DPR).
   // - Moving (split-screen): DPR is ~1.53, leading to gigantic buttons and text.
   // - Parked (fullscreen): DPR is 1.0, leading to microscopic fonts on the 1920x1140 canvas.

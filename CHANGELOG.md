@@ -1,3 +1,9 @@
+## v0.1.36 - 2026-10-06
+
+- Merge branch 'main' of github.com:8layer8/Mayhem
+- fix full screen album art
+- fix rebuild script
+
 ## v0.1.35 - 2026-10-06
 
 - chore: release v0.2.0

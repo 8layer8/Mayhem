@@ -35,20 +35,25 @@ export function isTeslaBrowser(): boolean {
     /* ignore */
   }
 
-  // 3. Heuristics fallback (works in driving mode when UA might be stripped of "Tesla")
-  // - Tesla's browser scales to exactly/near 1.53 devicePixelRatio in split screen / driving mode.
-  // - Tesla's operating system is Linux-based, so it will report Linux in the UA.
-  const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-  const isLinux = /Linux/i.test(ua);
-  const hasTeslaDpr = Math.abs(dpr - 1.53) < 0.005; // Matches 1.5299999713897 perfectly
+  // 3. Robust Heuristics fallback (no localStorage, works in driving mode when UA stripped)
+  if (typeof window !== "undefined") {
+    const dpr = window.devicePixelRatio || 1;
+    const isTeslaDpr = Math.abs(dpr - 1.53) < 0.015; // Matches 1.5299999713897
+    
+    // Check for moving split-screen metrics: 773x601 logical size, 1.53 DPR
+    const isMovingMetrics = isTeslaDpr && window.innerWidth >= 700 && window.innerWidth <= 850 && window.innerHeight >= 550 && window.innerHeight <= 650;
+    
+    // Check for parked fullscreen metrics: 1920 width, 1.0 DPR, height around 1140
+    const isParkedMetrics = Math.abs(dpr - 1.0) < 0.01 && window.innerWidth === 1920 && window.innerHeight >= 1000 && window.innerHeight <= 1180;
 
-  if (isLinux && hasTeslaDpr) {
-    try {
-      localStorage.setItem("mayhem-tesla-detected", "true");
-    } catch {
-      /* ignore */
+    if (isMovingMetrics || isParkedMetrics) {
+      try {
+        localStorage.setItem("mayhem-tesla-detected", "true");
+      } catch {
+        /* ignore */
+      }
+      return true;
     }
-    return true;
   }
 
   return false;

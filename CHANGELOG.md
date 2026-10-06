@@ -1,3 +1,18 @@
+## v0.1.40 - 2026-10-06
+
+- chore: release v0.1.39
+- chore: release v0.1.38
+- Merge branch 'main' of github.com:8layer8/Mayhem
+- convert to regular ports not traefik
+
+## v0.1.39 - 2026-10-06
+
+
+
+## v0.1.38 - 2026-10-06
+
+
+
 ## v0.1.37 - 2026-10-06
 
 - fix fullscreen tesla

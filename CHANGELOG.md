@@ -1,3 +1,7 @@
+## v0.1.37 - 2026-10-06
+
+- fix fullscreen tesla
+
 ## v0.1.36 - 2026-10-06
 
 - Merge branch 'main' of github.com:8layer8/Mayhem

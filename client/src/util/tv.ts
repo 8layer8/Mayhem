@@ -72,7 +72,7 @@ export function initTvMode(): void {
 /**
  * Adjust the server UI_SCALE preset for the current client.
  * TV browsers bump small/medium up for distance viewing.
- * Tesla caps at medium — viewport-based tokens come from initTeslaViewport().
+ * Tesla supports "small" for compact, "full" for full-screen cover art, and "medium" for standard.
  */
 export function effectiveUiScale(serverScale: string): string {
   if (isTvBrowser()) {
@@ -80,6 +80,7 @@ export function effectiveUiScale(serverScale: string): string {
     return serverScale;
   }
   if (isTeslaBrowser()) {
+    if (serverScale === "full") return "full";
     return serverScale === "small" ? "small" : "medium";
   }
   return serverScale;
